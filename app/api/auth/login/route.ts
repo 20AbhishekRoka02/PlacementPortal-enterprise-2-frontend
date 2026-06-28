@@ -1,24 +1,10 @@
-// import type { NextApiRequest, NextApiResponse } from 'next'
-import { type NextRequest } from "next/server"
-
-type ResponseData = {
-  message: string
-}
-
-type LoginData = {
-  email: string,
-  password: string
-}
+import { NextResponse, type NextRequest } from "next/server"
 
 export async function POST(
   req: NextRequest,
-  // res: extApiResponse<ResponseData>
 ) {
-
-  // console.log(res)
   const reqDict = await req.json()
-  console.log(reqDict);
-  
+
   try {
     const res = await fetch(`${process.env.BACKEND_URL}/api/auth/login`, {
       method: "POST",
@@ -28,16 +14,21 @@ export async function POST(
         password: reqDict.password,
       }),
     });
-    
+
     if (!res.ok) throw new Error("Login failed");
-    
-    // const result = await res.json();
-    // console.log("Login success:", result);
-    
+
     // Redirect or store token here
     const result = await res.json();
-    console.log("Login success:", result);
-    return Response.json({token: result.token,  message: result.message })
+
+    const response = NextResponse.json(result, {
+      status: res.status,
+    })
+    // Forward every Set-Cookie header from Django
+    const setCookie = res.headers.get("set-cookie");
+    if (setCookie) {
+      response.headers.append("set-cookie", setCookie);
+    }
+    return response;
 
   } catch (err) {
     console.error("Login error:", err);

@@ -3,27 +3,17 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldError,
-
-  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { useState } from "react"
-// import React from "react"
+import { useRouter } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroupTextarea,
-} from "@/components/ui/input-group"
 
 const formSchema = z.object({
   email: z.email(),
@@ -34,6 +24,8 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -42,31 +34,34 @@ export function LoginForm({
     },
   })
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {
-    console.log("data: ", data);
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="bg-code text-code-foreground mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
-    })
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+     toast.promise(() => new Promise((resolve) => setTimeout(() => resolve({ name: "Event" }), 1000)),
+            {
+              loading: "Loading...",
+              error: "Error",
+              position: "top-center"
+            },
+          )
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(values),
+      });
+
+      if (!res.ok) throw new Error("Login failed");
+
+      const result = await res.json();
+      toast.success("Login Successful!", {position: "top-center"});
+      router.push("/");
+      // Redirect or store token here
+    } catch (err) {
+      toast.error("Login Failed!", {position: "top-center"});
+      // console.error("Login error:", err);
+    }
   }
-
-  // const [email, setEmail] = useState("");
-  // const [password, setPassword] = useState("");
-
-  // const login = async (e: React.FormEventHandler<HTMLFormElement>) => {
-  //   e.preventDefault();
-
-  // }
 
   return (
     <form id="form-login" className={cn("flex flex-col gap-6", className)} {...props} onSubmit={form.handleSubmit(onSubmit)}>
