@@ -20,6 +20,19 @@ const formSchema = z.object({
   password: z.string()
 })
 
+function getErrorMessage(result: any) {
+  if (result.detail) return result.detail;
+  if (result.message) return result.message;
+  if (result.non_field_errors?.length) return result.non_field_errors[0];
+
+  const firstKey = Object.keys(result)[0];
+  if (firstKey && Array.isArray(result[firstKey])) {
+    return result[firstKey][0];
+  }
+
+  return "Something went wrong.";
+}
+
 export function LoginForm({
   className,
   ...props
@@ -34,32 +47,61 @@ export function LoginForm({
     },
   })
 
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-     toast.promise(() => new Promise((resolve) => setTimeout(() => resolve({ name: "Event" }), 1000)),
-            {
-              loading: "Loading...",
-              error: "Error",
-              position: "top-center"
-            },
-          )
+    const loadingToast = toast.loading("Logging in...", {
+      position: "top-center",
+    });
 
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         credentials: "include",
         body: JSON.stringify(values),
       });
 
-      if (!res.ok) throw new Error("Login failed");
-
       const result = await res.json();
-      toast.success("Login Successful!", {position: "top-center"});
+
+      if (!res.ok) {
+        let errorMessage = "Login failed.";
+
+        if (typeof result.detail === "string") {
+          errorMessage = result.detail;
+        } else if (typeof result.message === "string") {
+          errorMessage = result.message;
+        } else if (Array.isArray(result.non_field_errors)) {
+          errorMessage = result.non_field_errors[0];
+        } else {
+          const firstKey = Object.keys(result)[0];
+          if (firstKey && Array.isArray(result[firstKey])) {
+            errorMessage = result[firstKey][0];
+          }
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      toast.dismiss(loadingToast);
+
+      toast.success("Login Successful!", {
+        position: "top-center",
+      });
+
       router.push("/");
-      // Redirect or store token here
     } catch (err) {
-      toast.error("Login Failed!", {position: "top-center"});
-      // console.error("Login error:", err);
+      toast.dismiss(loadingToast);
+
+      toast.error(
+        err instanceof Error ? err.message : "Something went wrong.",
+        {
+          position: "top-center",
+        }
+      );
+
+      console.error(err);
     }
   }
 
