@@ -90,7 +90,7 @@ export function LoginForm({
         position: "top-center",
       });
 
-      router.push("/");
+      router.push("/dashboard");
     } catch (err) {
       toast.dismiss(loadingToast);
 
