@@ -16,20 +16,12 @@ export async function GET(
         Cookie: cookie ?? "",
       },
     });
-    console.log("res: ", res)
     if (!res.ok) {
-      console.log("res status: ", res.status);
-
       throw new Error("Profile fetch failed");
     } 
-    
-    // const result = await res.json();
-    // console.log("Login success:", result);
-    
     // Redirect or store token here
     const result = await res.json();
     result["status"] = 200;
-    console.log("Result is: ", result);
     return Response.json(result);
 
   } catch (err) {

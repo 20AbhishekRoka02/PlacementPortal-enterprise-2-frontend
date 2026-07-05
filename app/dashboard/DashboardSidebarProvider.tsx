@@ -20,12 +20,6 @@ import Breadcrumbs from '@/components/dashboard/breadcrumbs'
 // import { usePathname } from 'next/navigation'
 // import { useEffect } from 'react';
 function DashboardSidebarProvider({children}:{children: React.ReactNode}) {
-
-    // useEffect(() => {
-    //     const p = usePathname();
-    //     console.log("p: ", p);
-    // })
-    
     return (
         <>
             <SidebarProvider>

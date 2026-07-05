@@ -56,16 +56,11 @@ export default function AppSidebar() {
           },
           // body: JSON.stringify(values),
         });
-        console.log("res: ", res);
   
         if (!res.ok) throw new Error("Profile fetch failed");
   
         const result = await res.json();
-        console.log("result: ", result);
         setUser((preUser) => ({...preUser, name: result.full_name, email: result.email, role: result.role}));
-        
-        // console.log("Result profile: ", result);
-
       } catch (err) {
         console.error("Login error:", err);
       }
@@ -90,7 +85,6 @@ export default function AppSidebar() {
   ]
 
   const handleClick = (key: string, url: string) => {
-    console.log("key is: ", key);
     setActive(key);
     router.push(url);
   }

@@ -19,7 +19,6 @@ type breadcrumbObj = {
 function Breadcrumbs() {
 
     const p = usePathname();
-    // console.log("path: ", path);
 
     let len = p.split("/").length;
     let paths = p.split("/").slice(1, len - 1);

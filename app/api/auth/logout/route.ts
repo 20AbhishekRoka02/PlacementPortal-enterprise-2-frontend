@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
     );
 
     const data = await backendResponse.json();
-    console.log("data: ", data)
 
     // Forward backend errors unchanged
     if (!backendResponse.ok) {
