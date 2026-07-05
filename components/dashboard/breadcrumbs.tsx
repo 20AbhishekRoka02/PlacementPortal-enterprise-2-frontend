@@ -1,76 +1,53 @@
-"use client"
-import React from 'react'
+"use client";
+
+import React from "react";
+import { usePathname } from "next/navigation";
+import { SlashIcon } from "lucide-react";
+
 import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
-} from '@/components/ui/breadcrumb'
-import { usePathname } from 'next/navigation'
-import { SlashIcon } from 'lucide-react'
-// import { useEffect } from 'react'
-type breadcrumbObj = {
-    name: string,
-    link: string
-}
 function Breadcrumbs() {
+  const pathname = usePathname();
 
-    const p = usePathname();
+  const paths = pathname.split("/").filter(Boolean);
 
-    let len = p.split("/").length;
-    let paths = p.split("/").slice(1, len - 1);
-    let pathObjs: breadcrumbObj[] = [];
+  const breadcrumbs = paths.slice(0, -1).map((name, index) => ({
+    name,
+    link: "/" + paths.slice(0, index + 1).join("/"),
+  }));
 
-    for (let index = 0; index < paths.length- 1; index++) {
-        let link = "/" + paths.slice(0, index + 1).join("/");
-        let name = paths[index];
-        let pathObj: breadcrumbObj = {
-            name: name,
-            link: link
-        };
+  const currentPage = paths[paths.length - 1];
 
-        pathObjs.push(pathObj);
-    }
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        {breadcrumbs.map((breadcrumb) => (
+          <React.Fragment key={breadcrumb.link}>
+            <BreadcrumbItem className="hidden md:block">
+              <BreadcrumbLink href={breadcrumb.link}>
+                {breadcrumb.name}
+              </BreadcrumbLink>
+            </BreadcrumbItem>
 
-    return (
+            <BreadcrumbSeparator className="hidden md:block">
+              <SlashIcon />
+            </BreadcrumbSeparator>
+          </React.Fragment>
+        ))}
 
-        <>
-            <Breadcrumb>
-                <BreadcrumbList>
-                    {
-                        (pathObjs.length > 0) ?
-                            pathObjs.map((pathObj, index) => (
-
-                                <>
-
-                                    <BreadcrumbItem className="hidden md:block" key={index}>
-                                        <BreadcrumbLink href={pathObj.link}>
-                                            {pathObj.name}
-                                        </BreadcrumbLink>
-                                    </BreadcrumbItem>
-                                    <BreadcrumbSeparator className="hidden md:block">
-                                        <SlashIcon/>
-                                    </ BreadcrumbSeparator>
-                                </>
-
-
-                            ))
-                            : ""
-
-                    }
-                    {/* <BreadcrumbItem className="hidden md:block">
-                    </BreadcrumbItem> */}
-                    <BreadcrumbItem>
-                        <BreadcrumbPage>{paths[paths.length - 1]}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                </BreadcrumbList>
-            </Breadcrumb>
-
-        </>
-    )
+        <BreadcrumbItem>
+          <BreadcrumbPage>{currentPage}</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
 }
 
-export default Breadcrumbs
+export default Breadcrumbs;
