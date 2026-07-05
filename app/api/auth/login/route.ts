@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
     });
 
     const setCookie = backendResponse.headers.get("set-cookie");
-    console.log("setCookie: ", setCookie);
     if (setCookie) {
       response.headers.append("set-cookie", setCookie);
     }
