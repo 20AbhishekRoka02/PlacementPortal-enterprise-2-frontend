@@ -38,40 +38,42 @@ export default function AppSidebar() {
   }
 
   const [user, setUser] = useState<User>({
-     name: "",
+    name: "",
     avatar: "https://github.com/shadcn.png",
     email: "",
     role: "student"
   });
 
-  // useEffect(() => {
-  //   const fetchProfile = async () => {
+  useEffect(() => {
+    const fetchProfile = async () => {
 
-  //     try {
-  //       const res = await fetch("/api/profile", {
-  //         method: "POST",
-  //         credentials: "include",
-  //         headers: { 
-  //           "Content-Type": "application/json",
-  //         },
-  //         // body: JSON.stringify(values),
-  //       });
+      try {
+        const res = await fetch("/api/profile", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          // body: JSON.stringify(values),
+        });
+        console.log("res: ", res);
   
-  //       if (!res.ok) throw new Error("Profile fetch failed");
+        if (!res.ok) throw new Error("Profile fetch failed");
   
-  //       const result = await res.json();
-  //       setUser((preUser) => ({...preUser, name: result.data.username, email: result.data.email, role: result.data.role}));
+        const result = await res.json();
+        console.log("result: ", result);
+        setUser((preUser) => ({...preUser, name: result.full_name, email: result.email, role: result.role}));
         
-  //       // console.log("Result profile: ", result);
+        // console.log("Result profile: ", result);
 
-  //     } catch (err) {
-  //       console.error("Login error:", err);
-  //     }
-  //   }
+      } catch (err) {
+        console.error("Login error:", err);
+      }
+    }
 
-  //   fetchProfile();
+    fetchProfile();
 
-  // }, []);
+  }, []);
 
 
   const sidebarMenuItems = [
@@ -94,11 +96,26 @@ export default function AppSidebar() {
   }
 
   const router = useRouter();
-  // const logout = () => {
-  //   Cookies.remove("token");
-  //   router.refresh();
+  const logout = async () => {
+    try {
+        const res = await fetch("/api/auth/logout", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
-  // }
+        if (!res.ok) throw new Error("Logout failed");
+
+        const result = await res.json();
+
+      } catch (err) {
+        console.error("Login error:", err);
+      }
+
+    router.refresh();
+  }
 
   
 
@@ -158,7 +175,7 @@ export default function AppSidebar() {
       </SidebarContent>
       <SidebarFooter >
         <Button
-          variant={"destructive"}>Logout</Button>
+          variant={"destructive"} onClick={logout}>Logout</Button>
       </SidebarFooter>
     </Sidebar>
 

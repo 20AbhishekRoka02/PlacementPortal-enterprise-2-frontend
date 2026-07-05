@@ -1,21 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
+  const cookie = req.headers.get("cookie");
   try {
-    const body = await req.json();
-
     const backendResponse = await fetch(
-      `${process.env.BACKEND_URL}/api/auth/login`,
+      `${process.env.BACKEND_URL}/api/auth/logout`,
       {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          Cookie: cookie ?? "",
         },
-        body: JSON.stringify(body),
       }
     );
 
     const data = await backendResponse.json();
+    console.log("data: ", data)
 
     // Forward backend errors unchanged
     if (!backendResponse.ok) {
@@ -24,24 +25,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Allow only students
-    if (data.user?.role !== "student") {
-      return NextResponse.json(
-        {
-          detail: "Only students can log in through this portal.",
-        },
-        {
-          status: 403,
-        }
-      );
-    }
 
     const response = NextResponse.json(data, {
       status: 200,
     });
 
     const setCookie = backendResponse.headers.get("set-cookie");
-    console.log("setCookie: ", setCookie);
     if (setCookie) {
       response.headers.append("set-cookie", setCookie);
     }
@@ -55,7 +44,7 @@ export async function POST(req: NextRequest) {
         detail: "Unable to connect to the authentication server.",
       },
       {
-        status: 500,
+        status: 400,
       }
     );
   }
