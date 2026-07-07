@@ -12,10 +12,14 @@ interface Job {
   deadline: string;
   batch: string;
   description: string;
+  status: string;
 }
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function JobDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const router = useRouter();
 
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -51,9 +55,45 @@ export default function JobDetailPage() {
     }
   }, [slug]);
 
+  const apply_job = async () => {
+    try {
+      const res = await fetch("/api/application", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          job: Number(slug),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Unable to apply.");
+        return;
+      }
+
+      toast.success(data.message || "Application submitted successfully.");
+
+      // Reload page so status changes to Applied
+      setJob((prev) =>
+        prev
+          ? {
+            ...prev,
+            status: "Applied",
+          }
+          : prev
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong.");
+    }
+  };
+
   if (loading) {
     return (
-      <div className="container mx-auto py-10">
+      <div className="container mx-auto py-10 text-center">
         Loading...
       </div>
     );
@@ -106,10 +146,22 @@ export default function JobDetailPage() {
         </div>
       </div>
       <div className="pt-2">
-  <Button size="lg" className="w-full md:w-auto">
-    Apply Now
-  </Button>
-</div>
+        {job?.status === "Not Applied" ? (
+          <Button size="lg" className="w-full md:w-auto" onClick={apply_job}>
+            Apply Now
+          </Button>
+        ) : (
+          <Button
+            size="lg"
+            variant="ghost"
+            className="w-full md:w-auto"
+            disabled
+          >
+            Applied
+          </Button>
+        )}
+
+      </div>
 
       <div>
         <h2 className="mb-3 text-xl font-semibold">

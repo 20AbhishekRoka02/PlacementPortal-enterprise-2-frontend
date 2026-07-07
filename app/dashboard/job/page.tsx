@@ -60,6 +60,7 @@ export default function JobsPage() {
         const result = await res.json();
 
         setJobs(result.data);
+        console.log("job list: ", result.data)
       } catch (err) {
         console.error("Error fetching jobs:", err);
       }
