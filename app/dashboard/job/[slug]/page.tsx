@@ -15,11 +15,9 @@ interface Job {
   status: string;
 }
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 export default function JobDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const router = useRouter();
 
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);

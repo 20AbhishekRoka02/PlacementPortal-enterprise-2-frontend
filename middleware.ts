@@ -15,7 +15,8 @@ export default function middleware(request: NextRequest) {
   }
 
   // redirect to /dashboard, if user request for / 
-  if (request.nextUrl.pathname == "/") { return NextResponse.redirect(new URL("/dashboard", request.url))}
+  if (request.nextUrl.pathname == "/") { return NextResponse.redirect(new URL("/dashboard/job", request.url))}
+  if (request.nextUrl.pathname == "/dashboard") { return NextResponse.redirect(new URL("/dashboard/job", request.url))}
 
 
   return NextResponse.next();
