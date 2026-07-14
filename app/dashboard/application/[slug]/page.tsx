@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText } from "lucide-react";
 
 interface Application {
   id: number;
@@ -21,6 +22,9 @@ interface Application {
   student_phone_number: string;
   student_whatsapp_number: string;
   student_email_id: string | null;
+
+  resume_file_name: string;
+  resume_file_size: number;
 }
 
 export default function ApplicationDetailPage() {
@@ -121,6 +125,39 @@ export default function ApplicationDetailPage() {
               /month
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Resume */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Resume</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          {application.resume_file_name ? (
+            <div className="flex items-center gap-4 rounded-lg border p-4 hover:bg-muted/40 transition-colors">
+              {/* PDF Box */}
+              <div className="flex h-14 w-14 items-center justify-center rounded-md bg-red-100 text-red-600 font-bold text-sm">
+                PDF
+              </div>
+
+              {/* Resume Info */}
+              <div className="min-w-0">
+                <p className="truncate font-semibold">
+                  {application.resume_file_name}
+                </p>
+
+                <p className="text-sm text-muted-foreground">
+                  {application.resume_file_size.toFixed(2)} KB
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-muted-foreground">
+              No resume uploaded.
+            </p>
+          )}
         </CardContent>
       </Card>
 
