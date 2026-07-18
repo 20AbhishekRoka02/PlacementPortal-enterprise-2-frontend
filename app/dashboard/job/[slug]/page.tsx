@@ -15,6 +15,7 @@ interface Job {
   status: string;
 }
 import { toast } from "sonner";
+import ApplyJobDialog from "@/components/dashboard/application/ApplyJobDialogBox";
 
 export default function JobDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -53,41 +54,41 @@ export default function JobDetailPage() {
     }
   }, [slug]);
 
-  const apply_job = async () => {
-    try {
-      const res = await fetch("/api/application", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          job: Number(slug),
-        }),
-      });
+  // const apply_job = async () => {
+  //   try {
+  //     const res = await fetch("/api/application", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         job: Number(slug),
+  //       }),
+  //     });
 
-      const data = await res.json();
+  //     const data = await res.json();
 
-      if (!res.ok) {
-        toast.error(data.message || "Unable to apply.");
-        return;
-      }
+  //     if (!res.ok) {
+  //       toast.error(data.message || "Unable to apply.");
+  //       return;
+  //     }
 
-      toast.success(data.message || "Application submitted successfully.");
+  //     toast.success(data.message || "Application submitted successfully.");
 
-      // Reload page so status changes to Applied
-      setJob((prev) =>
-        prev
-          ? {
-            ...prev,
-            status: "Applied",
-          }
-          : prev
-      );
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong.");
-    }
-  };
+  //     // Reload page so status changes to Applied
+  //     setJob((prev) =>
+  //       prev
+  //         ? {
+  //           ...prev,
+  //           status: "Applied",
+  //         }
+  //         : prev
+  //     );
+  //   } catch (error) {
+  //     console.error(error);
+  //     toast.error("Something went wrong.");
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -145,9 +146,19 @@ export default function JobDetailPage() {
       </div>
       <div className="pt-2">
         {job?.status === "Not Applied" ? (
-          <Button size="lg" className="w-full md:w-auto" onClick={apply_job}>
-            Apply Now
-          </Button>
+          <ApplyJobDialog
+            jobId={job.id}
+            onSuccessAction={() => {
+              setJob((prev) =>
+                prev
+                  ? {
+                    ...prev,
+                    status: "Applied",
+                  }
+                  : prev
+              );
+            }}
+          />
         ) : (
           <Button
             size="lg"

@@ -128,6 +128,8 @@ export default function AppSidebar() {
           <h1 className='text-center text-wrap text-3xl font-bold py-6'>Admin Panel</h1>
           {/* h-8 w-8 */}
           <div className=' '>
+            <a href="/dashboard/profile">
+
             <Avatar className=" size-36 flex mx-16 lg:mx-12">
               <AvatarImage className='rounded-full grayscale  ' src={user.avatar} alt={user.name} />
               {/* <Image 
@@ -139,6 +141,7 @@ export default function AppSidebar() {
                   /> */}
               <AvatarFallback className="flex items-center justify-center rounded-lg ">CN</AvatarFallback>
             </Avatar>
+            </a>
           </div>
           <p className='text-center'>{user.name}</p>
         </div>

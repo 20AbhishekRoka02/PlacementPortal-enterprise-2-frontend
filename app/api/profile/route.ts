@@ -1,33 +1,67 @@
-// import type { NextApiRequest, NextApiResponse } from 'next'
-import { type NextRequest } from "next/server"
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
+export async function GET() {
+    try {
+        const cookieStore = await cookies();
 
-export async function GET(
-  req: NextRequest,
-  // res: extApiResponse<ResponseData>
-) {
-  const cookie = req.headers.get("cookie");
-  try {
-    const res = await fetch(`${process.env.BACKEND_URL}/api/auth/user/`, {
-      method: "GET",
-      credentials:"include",
-      headers: { 
-        "Content-Type": "application/json",
-        Cookie: cookie ?? "",
-      },
-    });
-    if (!res.ok) {
-      throw new Error("Profile fetch failed");
-    } 
-    // Redirect or store token here
-    const result = await res.json();
-    result["status"] = 200;
-    return Response.json(result);
+        const response = await fetch(
+            `${process.env.BACKEND_URL}/student/profile`,
+            {
+                headers: {
+                    Cookie: cookieStore.toString(),
+                },
+            }
+        );
 
-  } catch (err) {
-    console.error("Profile fetch error:", err);
-    
-    return Response.json({"message":err, "status": 400})
-  }
+        const data = await response.json();
 
+        return NextResponse.json(data, {
+            status: response.status,
+        });
+    } catch (error) {
+        return NextResponse.json(
+            {
+                message: "Unable to fetch profile.",
+            },
+            {
+                status: 500,
+            }
+        );
+    }
+}
+
+export async function PUT(request: NextRequest) {
+    try {
+        const body = await request.json();
+
+        const cookieStore = await cookies();
+
+        const response = await fetch(
+            `${process.env.BACKEND_URL}/student/profile-update/`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Cookie: cookieStore.toString(),
+                },
+                body: JSON.stringify(body),
+            }
+        );
+
+        const data = await response.json();
+
+        return NextResponse.json(data, {
+            status: response.status,
+        });
+    } catch (error) {
+        return NextResponse.json(
+            {
+                message: "Unable to update profile.",
+            },
+            {
+                status: 500,
+            }
+        );
+    }
 }
