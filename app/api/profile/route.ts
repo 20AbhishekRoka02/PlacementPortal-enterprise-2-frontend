@@ -6,7 +6,7 @@ export async function GET() {
         const cookieStore = await cookies();
 
         const response = await fetch(
-            `${process.env.BACKEND_URL}/student/profile`,
+            `${process.env.BACKEND_URL}/student/profile/`,
             {
                 headers: {
                     Cookie: cookieStore.toString(),
