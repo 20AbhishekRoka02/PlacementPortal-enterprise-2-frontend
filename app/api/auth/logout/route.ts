@@ -4,7 +4,7 @@ export async function POST(req: NextRequest) {
   const cookie = req.headers.get("cookie");
   try {
     const backendResponse = await fetch(
-      `${process.env.BACKEND_URL}/api/auth/logout`,
+      `${process.env.BACKEND_URL}/api/auth/logout/`,
       {
         method: "POST",
         credentials: "include",
