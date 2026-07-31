@@ -81,7 +81,12 @@ export default function AppSidebar() {
       key: "application",
       name: "Applications",
       url: "/dashboard/application"
-    }
+    },
+    {
+      key: "resume",
+      name: "resumes",
+      url: "/dashboard/resume"
+    },
   ]
 
   const handleClick = (key: string, url: string) => {
