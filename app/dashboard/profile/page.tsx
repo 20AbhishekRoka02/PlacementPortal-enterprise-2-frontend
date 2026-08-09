@@ -19,8 +19,6 @@ type StudentProfile = {
     first_name: string;
     last_name: string;
     email: string;
-    phone_number: string;
-    whatsapp_number: string;
     batch: string;
 };
 
@@ -100,10 +98,6 @@ export default function StudentProfilePage() {
                             profile.first_name,
                         last_name:
                             profile.last_name,
-                        phone_number:
-                            profile.phone_number,
-                        whatsapp_number:
-                            profile.whatsapp_number,
                     }),
                 }
             );
@@ -200,41 +194,6 @@ export default function StudentProfilePage() {
                             disabled
                         />
                     </div>
-
-                    <div className="space-y-2">
-                        <Label>
-                            Phone Number
-                        </Label>
-                        <Input
-                            value={
-                                profile.phone_number
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "phone_number",
-                                    e.target.value
-                                )
-                            }
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>
-                            WhatsApp Number
-                        </Label>
-                        <Input
-                            value={
-                                profile.whatsapp_number
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "whatsapp_number",
-                                    e.target.value
-                                )
-                            }
-                        />
-                    </div>
-
                     <div className="space-y-2">
                         <Label>Batch</Label>
                         <Input

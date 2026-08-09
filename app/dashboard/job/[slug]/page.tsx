@@ -3,6 +3,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+
+interface JobAttribute {
+  pk: number;
+  name: string;
+  data_type: "text" | "integer" | "decimal" | "boolean" | "enum" | "date";
+  required: boolean;
+  order: number;
+}
 interface Job {
   id: number;
   company: string;
@@ -13,6 +21,7 @@ interface Job {
   batch: string;
   description: string;
   status: string;
+  attributes: JobAttribute[] | null;
 }
 import { toast } from "sonner";
 import ApplyJobDialog from "@/components/dashboard/application/ApplyJobDialogBox";
@@ -41,6 +50,7 @@ export default function JobDetailPage() {
         }
 
         const result = await res.json();
+        console.log("job detail: ", result.data);
         setJob(result.data);
       } catch (error) {
         console.error(error);
@@ -53,42 +63,6 @@ export default function JobDetailPage() {
       fetchJob();
     }
   }, [slug]);
-
-  // const apply_job = async () => {
-  //   try {
-  //     const res = await fetch("/api/application", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         job: Number(slug),
-  //       }),
-  //     });
-
-  //     const data = await res.json();
-
-  //     if (!res.ok) {
-  //       toast.error(data.message || "Unable to apply.");
-  //       return;
-  //     }
-
-  //     toast.success(data.message || "Application submitted successfully.");
-
-  //     // Reload page so status changes to Applied
-  //     setJob((prev) =>
-  //       prev
-  //         ? {
-  //           ...prev,
-  //           status: "Applied",
-  //         }
-  //         : prev
-  //     );
-  //   } catch (error) {
-  //     console.error(error);
-  //     toast.error("Something went wrong.");
-  //   }
-  // };
 
   if (loading) {
     return (
@@ -148,6 +122,7 @@ export default function JobDetailPage() {
         {job?.status === "Not Applied" ? (
           <ApplyJobDialog
             jobId={job.id}
+            attributes={job.attributes ?? []}
             onSuccessAction={() => {
               setJob((prev) =>
                 prev

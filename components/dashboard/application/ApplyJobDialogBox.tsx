@@ -26,6 +26,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { Card } from "@/components/ui/card";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 import { FileText, Upload } from "lucide-react";
 
 import { toast } from "sonner";
@@ -39,14 +41,31 @@ interface Resume {
 }
 
 
+interface JobAttribute {
+    pk: number;
+    name: string;
+    data_type:
+    | "text"
+    | "integer"
+    | "decimal"
+    | "boolean"
+    | "enum"
+    | "date";
+    required: boolean;
+    order: number;
+}
+
+
 interface ApplyJobDialogProps {
     jobId: number;
+    attributes: JobAttribute[];
     onSuccessAction: () => void;
 }
 
 
 export default function ApplyJobDialog({
     jobId,
+    attributes,
     onSuccessAction,
 }: ApplyJobDialogProps) {
 
@@ -54,6 +73,7 @@ export default function ApplyJobDialog({
 
     const [resumes, setResumes] = useState<Resume[]>([]);
     const [selectedResumeId, setSelectedResumeId] = useState<string>("");
+    const [answers, setAnswers] = useState<Record<number, string | boolean>>({});
 
     const [loadingResumes, setLoadingResumes] = useState(false);
     const [uploadingResume, setUploadingResume] = useState(false);
@@ -100,6 +120,19 @@ export default function ApplyJobDialog({
         }
 
     }, [open]);
+
+
+    const updateAnswer = (
+        fieldName: number,
+        value: string | boolean
+    ) => {
+
+        setAnswers((prev) => ({
+            ...prev,
+            [fieldName]: value,
+        }));
+
+    };
 
 
     const uploadResume = async (
@@ -178,6 +211,37 @@ export default function ApplyJobDialog({
     };
 
 
+    const validateAnswers = () => {
+
+        for (const attribute of attributes) {
+
+            if (!attribute.required) {
+                continue;
+            }
+
+            const value = answers[attribute.pk];
+
+            if (
+                value === undefined ||
+                value === null ||
+                value === ""
+            ) {
+
+                toast.error(
+                    `${attribute.name} is required.`
+                );
+
+                return false;
+
+            }
+
+        }
+
+        return true;
+
+    };
+
+
     const applyJob = async () => {
 
         if (!selectedResumeId) {
@@ -189,6 +253,9 @@ export default function ApplyJobDialog({
             return;
         }
 
+        if (!validateAnswers()) {
+            return;
+        }
 
         try {
 
@@ -209,6 +276,7 @@ export default function ApplyJobDialog({
                         resume_id: Number(
                             selectedResumeId
                         ),
+                        answers,
                     }),
 
                     credentials: "include",
@@ -258,6 +326,181 @@ export default function ApplyJobDialog({
     };
 
 
+    const renderAttribute = (
+        attribute: JobAttribute
+    ) => {
+
+        const value = answers[attribute.pk];
+
+
+        switch (attribute.data_type) {
+
+            case "text":
+
+                return (
+                    <Input
+                        type="text"
+                        value={
+                            typeof value === "string"
+                                ? value
+                                : ""
+                        }
+                        onChange={(event) =>
+                            updateAnswer(
+                                attribute.pk,
+                                event.target.value
+                            )
+                        }
+                        placeholder={`Enter ${attribute.name}`}
+                    />
+                );
+
+
+            case "integer":
+
+                return (
+                    <Input
+                        type="number"
+                        step="1"
+                        value={
+                            typeof value === "string"
+                                ? value
+                                : ""
+                        }
+                        onChange={(event) =>
+                            updateAnswer(
+                                attribute.pk,
+                                event.target.value
+                            )
+                        }
+                        placeholder={`Enter ${attribute.name}`}
+                    />
+                );
+
+
+            case "decimal":
+
+                return (
+                    <Input
+                        type="number"
+                        step="0.01"
+                        value={
+                            typeof value === "string"
+                                ? value
+                                : ""
+                        }
+                        onChange={(event) =>
+                            updateAnswer(
+                                attribute.pk,
+                                event.target.value
+                            )
+                        }
+                        placeholder={`Enter ${attribute.name}`}
+                    />
+                );
+
+
+            case "boolean":
+
+                return (
+                    <RadioGroup
+                        value={
+                            value === undefined
+                                ? ""
+                                : value
+                                    ? "true"
+                                    : "false"
+                        }
+                        onValueChange={(selectedValue) =>
+                            updateAnswer(
+                                attribute.pk,
+                                selectedValue === "true"
+                            )
+                        }
+                    >
+                        <div className="flex items-center gap-6">
+
+                            <div className="flex items-center gap-2">
+                                <RadioGroupItem
+                                    value="true"
+                                    id={`${attribute.name}-yes`}
+                                />
+
+                                <Label
+                                    htmlFor={`${attribute.name}-yes`}
+                                >
+                                    Yes
+                                </Label>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <RadioGroupItem
+                                    value="false"
+                                    id={`${attribute.name}-no`}
+                                />
+
+                                <Label
+                                    htmlFor={`${attribute.name}-no`}
+                                >
+                                    No
+                                </Label>
+                            </div>
+
+                        </div>
+                    </RadioGroup>
+                );
+
+
+            case "date":
+
+                return (
+                    <Input
+                        type="date"
+                        value={
+                            typeof value === "string"
+                                ? value
+                                : ""
+                        }
+                        onChange={(event) =>
+                            updateAnswer(
+                                attribute.pk,
+                                event.target.value
+                            )
+                        }
+                    />
+                );
+
+
+            case "enum":
+
+                return (
+                    <Input
+                        type="text"
+                        value={
+                            typeof value === "string"
+                                ? value
+                                : ""
+                        }
+                        onChange={(event) =>
+                            updateAnswer(
+                                attribute.pk,
+                                event.target.value
+                            )
+                        }
+                        placeholder={`Enter ${attribute.name}`}
+                    />
+                );
+
+
+            default:
+
+                return null;
+
+        }
+
+    };
+
+
     return (
 
         <Dialog
@@ -283,53 +526,130 @@ export default function ApplyJobDialog({
                     </DialogTitle>
 
                     <DialogDescription>
-                        Select one of your existing
-                        resumes or upload a new one.
+                        Complete the application form
+                        and select your resume.
                     </DialogDescription>
 
                 </DialogHeader>
 
 
-                <div className="space-y-5">
+                <ScrollArea className="max-h-[70vh] pr-4">
+
+                    <div className="space-y-6">
 
 
-                    {/* Upload Resume */}
+                        {/* Dynamic Application Fields */}
 
-                    <div className="space-y-2">
+                        {attributes.length > 0 && (
 
-                        <Label>
-                            Upload Resume
-                        </Label>
+                            <div className="space-y-4">
 
-                        <Input
-                            type="file"
-                            accept=".pdf"
-                            onChange={uploadResume}
-                            disabled={uploadingResume}
-                        />
+                                <div>
 
-                        {
-                            uploadingResume && (
+                                    <h3 className="font-semibold">
+                                        Application Details
+                                    </h3>
+
+                                    <p className="text-sm text-muted-foreground">
+                                        Please provide the
+                                        information required
+                                        for this job.
+                                    </p>
+
+                                </div>
+
+
+                                <div className="space-y-4">
+
+                                    {[
+                                        ...attributes,
+                                    ]
+                                        .sort(
+                                            (a, b) =>
+                                                a.order -
+                                                b.order
+                                        )
+                                        .map(
+                                            (
+                                                attribute
+                                            ) => (
+
+                                                <div
+                                                    key={
+                                                        attribute.name
+                                                    }
+                                                    className="space-y-2"
+                                                >
+
+                                                    <Label>
+
+                                                        {
+                                                            attribute.name
+                                                        }
+
+                                                        {attribute.required && (
+                                                            <span className="ml-1 text-destructive">
+                                                                *
+                                                            </span>
+                                                        )}
+
+                                                    </Label>
+
+
+                                                    {renderAttribute(
+                                                        attribute
+                                                    )}
+
+                                                </div>
+
+                                            )
+                                        )}
+
+                                </div>
+
+                            </div>
+
+                        )}
+
+
+                        {/* Upload Resume */}
+
+                        <div className="space-y-2">
+
+                            <Label>
+                                Upload Resume
+                            </Label>
+
+                            <Input
+                                type="file"
+                                accept=".pdf"
+                                onChange={
+                                    uploadResume
+                                }
+                                disabled={
+                                    uploadingResume
+                                }
+                            />
+
+                            {uploadingResume && (
                                 <p className="text-sm text-muted-foreground">
                                     Uploading resume...
                                 </p>
-                            )
-                        }
+                            )}
 
-                    </div>
-
-
-                    {/* Existing Resumes */}
-
-                    <div className="space-y-2">
-
-                        <Label>
-                            Choose Resume
-                        </Label>
+                        </div>
 
 
-                        {
-                            loadingResumes ? (
+                        {/* Existing Resumes */}
+
+                        <div className="space-y-2">
+
+                            <Label>
+                                Choose Resume
+                            </Label>
+
+
+                            {loadingResumes ? (
 
                                 <p>
                                     Loading resumes...
@@ -350,69 +670,78 @@ export default function ApplyJobDialog({
 
                                         <div className="space-y-3">
 
-                                            {
-                                                resumes.length === 0 ? (
+                                            {resumes.length === 0 ? (
 
-                                                    <p className="text-sm text-muted-foreground">
-                                                        No resumes found.
-                                                        Upload one to continue.
-                                                    </p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    No resumes found.
+                                                    Upload one to continue.
+                                                </p>
 
-                                                ) : (
+                                            ) : (
 
-                                                    resumes.map(
-                                                        (resume) => (
+                                                resumes.map(
+                                                    (
+                                                        resume
+                                                    ) => (
 
-                                                            <Card
-                                                                key={resume.id}
-                                                                className="p-4"
-                                                            >
+                                                        <Card
+                                                            key={
+                                                                resume.id
+                                                            }
+                                                            className="p-4"
+                                                        >
 
-                                                                <div className="flex items-center gap-4">
+                                                            <div className="flex items-center gap-4">
 
-                                                                    <RadioGroupItem
-                                                                        value={String(resume.id)}
-                                                                        id={`resume-${resume.id}`}
+                                                                <RadioGroupItem
+                                                                    value={String(
+                                                                        resume.id
+                                                                    )}
+                                                                    id={`resume-${resume.id}`}
+                                                                />
+
+
+                                                                <div className="flex h-14 w-14 flex-col items-center justify-center rounded-md border bg-red-50">
+
+                                                                    <FileText
+                                                                        className="h-6 w-6 text-red-600"
                                                                     />
 
-
-                                                                    <div className="flex h-14 w-14 flex-col items-center justify-center rounded-md bg-red-50 border">
-
-                                                                        <FileText
-                                                                            className="h-6 w-6 text-red-600"
-                                                                        />
-
-                                                                        <span className="text-[10px] font-semibold text-red-600">
-                                                                            PDF
-                                                                        </span>
-
-                                                                    </div>
-
-
-                                                                    <Label
-                                                                        htmlFor={`resume-${resume.id}`}
-                                                                        className="flex-1 cursor-pointer"
-                                                                    >
-
-                                                                        <p className="font-semibold">
-                                                                            {resume.file_name}
-                                                                        </p>
-
-                                                                        <p className="text-sm text-muted-foreground">
-                                                                            {resume.size} KB
-                                                                        </p>
-
-                                                                    </Label>
+                                                                    <span className="text-[10px] font-semibold text-red-600">
+                                                                        PDF
+                                                                    </span>
 
                                                                 </div>
 
-                                                            </Card>
 
-                                                        )
+                                                                <Label
+                                                                    htmlFor={`resume-${resume.id}`}
+                                                                    className="flex-1 cursor-pointer"
+                                                                >
+
+                                                                    <p className="font-semibold">
+                                                                        {
+                                                                            resume.file_name
+                                                                        }
+                                                                    </p>
+
+                                                                    <p className="text-sm text-muted-foreground">
+                                                                        {
+                                                                            resume.size
+                                                                        }{" "}
+                                                                        KB
+                                                                    </p>
+
+                                                                </Label>
+
+                                                            </div>
+
+                                                        </Card>
+
                                                     )
-
                                                 )
-                                            }
+
+                                            )}
 
                                         </div>
 
@@ -420,44 +749,45 @@ export default function ApplyJobDialog({
 
                                 </ScrollArea>
 
-                            )
-                        }
+                            )}
 
-                    </div>
-
-
-                    {/* Actions */}
-
-                    <div className="flex justify-end gap-3">
-
-                        <Button
-                            variant="outline"
-                            onClick={() => setOpen(false)}
-                        >
-                            Cancel
-                        </Button>
+                        </div>
 
 
-                        <Button
-                            onClick={applyJob}
-                            disabled={
-                                applying ||
-                                uploadingResume
-                            }
-                        >
+                        {/* Actions */}
 
-                            {
-                                applying
+                        <div className="flex justify-end gap-3">
+
+                            <Button
+                                variant="outline"
+                                onClick={() =>
+                                    setOpen(false)
+                                }
+                            >
+                                Cancel
+                            </Button>
+
+
+                            <Button
+                                onClick={applyJob}
+                                disabled={
+                                    applying ||
+                                    uploadingResume
+                                }
+                            >
+
+                                {applying
                                     ? "Applying..."
-                                    : "Apply"
-                            }
+                                    : "Apply"}
 
-                        </Button>
+                            </Button>
+
+                        </div>
+
 
                     </div>
 
-
-                </div>
+                </ScrollArea>
 
             </DialogContent>
 
