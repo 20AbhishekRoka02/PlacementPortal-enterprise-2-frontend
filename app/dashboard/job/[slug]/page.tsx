@@ -10,6 +10,7 @@ interface JobAttribute {
   data_type: "text" | "integer" | "decimal" | "boolean" | "enum" | "date";
   required: boolean;
   order: number;
+  value: string | number | boolean | null;
 }
 interface Job {
   id: number;

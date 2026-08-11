@@ -26,14 +26,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { Card } from "@/components/ui/card";
 
-import { Checkbox } from "@/components/ui/checkbox";
-
-import { FileText, Upload } from "lucide-react";
+import { FileText } from "lucide-react";
 
 import { toast } from "sonner";
 
 
-interface Resume {
+export interface Resume {
     id: number;
     size: string;
     file_name: string;
@@ -41,7 +39,7 @@ interface Resume {
 }
 
 
-interface JobAttribute {
+export interface JobAttribute {
     pk: number;
     name: string;
     data_type:
@@ -53,14 +51,17 @@ interface JobAttribute {
     | "date";
     required: boolean;
     order: number;
+    value: string | number | boolean | null;  // need to expand it as per data types
 }
 
 
-interface ApplyJobDialogProps {
+export interface ApplyJobDialogProps {
     jobId: number;
     attributes: JobAttribute[];
     onSuccessAction: () => void;
 }
+
+export type AnswerValue = string | number | boolean;
 
 
 export default function ApplyJobDialog({
@@ -73,13 +74,39 @@ export default function ApplyJobDialog({
 
     const [resumes, setResumes] = useState<Resume[]>([]);
     const [selectedResumeId, setSelectedResumeId] = useState<string>("");
-    const [answers, setAnswers] = useState<Record<number, string | boolean>>({});
+    const [answers, setAnswers] = useState<Record<number, AnswerValue>>({});
 
     const [loadingResumes, setLoadingResumes] = useState(false);
     const [uploadingResume, setUploadingResume] = useState(false);
     const [applying, setApplying] = useState(false);
 
 
+    /* 
+    * Initialize dynamic fields from the values 
+    * returned by the Job Detail API. 
+    * 
+    * null -> no previous answer 
+    * false -> valid boolean answer 
+    */ 
+    useEffect(() => {
+        const initialAnswers: Record<
+            number,
+            AnswerValue
+        > = {};
+        
+        attributes.forEach((attribute) => {
+            if (attribute.value !== null) {
+                initialAnswers[attribute.pk] = attribute.value; 
+            } 
+        });
+
+        setAnswers(initialAnswers);
+    }, [attributes]);
+
+    /*
+    * Fetch student's resumes whenever
+    * the application dialog is opened.
+    */
     const fetchResumes = async () => {
 
         try {
@@ -121,20 +148,22 @@ export default function ApplyJobDialog({
 
     }, [open]);
 
-
+    /*
+    * Update a dynamic application answer.
+    */
     const updateAnswer = (
-        fieldName: number,
+        attributeId: number,
         value: string | boolean
     ) => {
 
         setAnswers((prev) => ({
             ...prev,
-            [fieldName]: value,
+            [attributeId]: value,
         }));
 
     };
 
-
+    /* Upload a new resume. */
     const uploadResume = async (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -211,6 +240,12 @@ export default function ApplyJobDialog({
     };
 
 
+    /*
+    * Validate all required dynamic fields.
+    *
+    * Important:
+    * false is a valid answer for boolean fields. 
+    */
     const validateAnswers = () => {
 
         for (const attribute of attributes) {
@@ -241,7 +276,7 @@ export default function ApplyJobDialog({
 
     };
 
-
+    /* Submit application. */
     const applyJob = async () => {
 
         if (!selectedResumeId) {
@@ -260,7 +295,6 @@ export default function ApplyJobDialog({
         try {
 
             setApplying(true);
-            console.log("jobID, resume_id: ", jobId, selectedResumeId)
 
             const res = await fetch(
                 "/api/application",
@@ -325,7 +359,7 @@ export default function ApplyJobDialog({
 
     };
 
-
+    // Render a dynamic field based on its datatype.
     const renderAttribute = (
         attribute: JobAttribute
     ) => {

@@ -6,6 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 
+interface ApplicationAttribute {
+  pk: number;
+  name: string;
+  data_type:
+  | "text"
+  | "integer"
+  | "decimal"
+  | "boolean"
+  | "enum"
+  | "date";
+  value: string | number | boolean | null;
+}
+
 interface Application {
   id: number;
   title: string;
@@ -25,6 +38,7 @@ interface Application {
 
   resume_file_name: string;
   resume_file_size: number;
+  attributes: ApplicationAttribute[] | null;
 }
 
 export default function ApplicationDetailPage() {
@@ -63,6 +77,50 @@ export default function ApplicationDetailPage() {
       fetchApplication();
     }
   }, [slug]);
+
+  /*
+  * Convert boolean values returned by the API
+  * into a user-friendly Yes / No value.
+  *
+  * Handles: 
+  * true 
+  * false
+  * "true"
+  * "false"
+  * "True"
+  * "False"
+  */
+  const formatBooleanValue = (value: string | number | boolean | null) => {
+    if (value === null) {
+      return "-";
+    }
+    if (value === true || String(value).toLowerCase() === "true") {
+      return "Yes";
+    }
+    if (value === false || String(value).toLowerCase() === "false") {
+      return "No";
+    }
+    return String(value);
+  };
+
+  /*
+  * Format an attribute value according
+  * to its datatype.
+  */
+  const formatAttributeValue = (attribute: ApplicationAttribute) => {
+    const { value, data_type } = attribute;
+    if (value === null || value === "") {
+      return "-";
+    }
+    switch (data_type) {
+      case "boolean":
+        return formatBooleanValue(value);
+      case "date":
+        return new Date(String(value)).toLocaleDateString("en-IN");
+      default:
+        return String(value);
+    }
+  };
 
   if (loading) {
     return (
@@ -128,6 +186,26 @@ export default function ApplicationDetailPage() {
         </CardContent>
       </Card>
 
+      {/* Application Attributes */}
+      {application.attributes && application.attributes.length > 0 && (
+        <Card> 
+        <CardHeader> 
+        <CardTitle> Application Details </CardTitle> 
+        </CardHeader>
+        <CardContent> 
+        <div className="grid gap-6 md:grid-cols-2">
+        {application.attributes.map( (attribute) => (
+          <div key={attribute.pk} >
+          <p className="text-sm text-muted-foreground"> {attribute.name} </p>
+          <p className="font-medium"> {formatAttributeValue( attribute )} </p>
+          </div> 
+        )
+        )}
+        </div>
+        </CardContent>
+        </Card>
+      )}
+
       {/* Resume */}
       <Card>
         <CardHeader>
@@ -171,16 +249,6 @@ export default function ApplicationDetailPage() {
           <div>
             <p className="text-sm text-muted-foreground">Email</p>
             <p>{application.student_email_id || "-"}</p>
-          </div>
-
-          <div>
-            <p className="text-sm text-muted-foreground">Phone</p>
-            <p>{application.student_phone_number || "-"}</p>
-          </div>
-
-          <div>
-            <p className="text-sm text-muted-foreground">WhatsApp</p>
-            <p>{application.student_whatsapp_number || "-"}</p>
           </div>
         </CardContent>
       </Card>
