@@ -14,17 +14,133 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type StudentProfile = {
+type BaseProfile = {
     id: number;
+    email: string;
+    role: string;
+    is_staff: boolean;
+};
+
+type StudentProfile =  BaseProfile & {
+    role: "student",
     first_name: string;
     last_name: string;
-    email: string;
     batch: string;
 };
 
-export default function StudentProfilePage() {
+type StaffProfile = BaseProfile & {
+    role: "placement_officer" | "hod" | "admin";
+};
+
+type Profile = StudentProfile | StaffProfile;
+
+
+function StudentProfileForm({
+    profile,
+    setProfile,
+    updating,
+    onSubmit,
+}: {
+    profile: StudentProfile;
+    setProfile: React.Dispatch<
+        React.SetStateAction<Profile | null>
+    >;
+    updating: boolean;
+    onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+}) {
+    return (
+        <form onSubmit={onSubmit} className="space-y-5">
+            <div className="space-y-2">
+                <Label>First Name</Label>
+
+                <Input
+                    value={profile.first_name}
+                    onChange={(e) =>
+                        setProfile({
+                            ...profile,
+                            first_name: e.target.value,
+                        })
+                    }
+                />
+            </div>
+
+            <div className="space-y-2">
+                <Label>Last Name</Label>
+
+                <Input
+                    value={profile.last_name}
+                    onChange={(e) =>
+                        setProfile({
+                            ...profile,
+                            last_name: e.target.value,
+                        })
+                    }
+                />
+            </div>
+
+            <div className="space-y-2">
+                <Label>Email Address</Label>
+
+                <Input
+                    value={profile.email}
+                    disabled
+                />
+            </div>
+
+            <div className="space-y-2">
+                <Label>Batch</Label>
+
+                <Input
+                    value={profile.batch}
+                    disabled
+                />
+            </div>
+
+            <Button
+                type="submit"
+                disabled={updating}
+                className="w-full"
+            >
+                {updating
+                    ? "Updating..."
+                    : "Update Profile"}
+            </Button>
+        </form>
+    );
+}
+
+function StaffProfileForm({
+    profile,
+}: {
+    profile: StaffProfile;
+}) {
+    return (
+        <div className="space-y-5">
+            <div className="space-y-2">
+                <Label>Email Address</Label>
+
+                <Input
+                    value={profile.email}
+                    disabled
+                />
+            </div>
+
+            <div className="space-y-2">
+                <Label>Role</Label>
+
+                <Input
+                    value={profile.role}
+                    disabled
+                />
+            </div>
+        </div>
+    );
+}
+
+
+export default function ProfilePage() {
     const [profile, setProfile] =
-        useState<StudentProfile | null>(null);
+        useState<Profile | null>(null);
 
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
@@ -39,6 +155,7 @@ export default function StudentProfilePage() {
             );
 
             const data = await response.json();
+            console.log("data: ", data);
 
             if (!response.ok) {
                 throw new Error(
@@ -48,6 +165,7 @@ export default function StudentProfilePage() {
             }
 
             setProfile(data.data);
+            console.log("profile data: ", profile);
         } catch (error: any) {
             toast.error(
                 error?.message ||
@@ -147,71 +265,18 @@ export default function StudentProfilePage() {
             </CardHeader>
 
             <CardContent>
-                <form
-                    onSubmit={handleSubmit}
-                    className="space-y-5"
-                >
-                    <div className="space-y-2">
-                        <Label>
-                            First Name
-                        </Label>
-                        <Input
-                            value={
-                                profile.first_name
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "first_name",
-                                    e.target.value
-                                )
-                            }
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>
-                            Last Name
-                        </Label>
-                        <Input
-                            value={
-                                profile.last_name
-                            }
-                            onChange={(e) =>
-                                handleChange(
-                                    "last_name",
-                                    e.target.value
-                                )
-                            }
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>
-                            Email Address
-                        </Label>
-                        <Input
-                            value={profile.email}
-                            disabled
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Batch</Label>
-                        <Input
-                            value={profile.batch}
-                            disabled
-                        />
-                    </div>
-
-                    <Button
-                        type="submit"
-                        disabled={updating}
-                        className="w-full"
-                    >
-                        {updating
-                            ? "Updating..."
-                            : "Update Profile"}
-                    </Button>
-                </form>
+                {profile.role === "student" ? (
+                    <StudentProfileForm
+                        profile={profile}
+                        setProfile={setProfile}
+                        updating={updating}
+                        onSubmit={handleSubmit}
+                    />
+                ) : (
+                    <StaffProfileForm
+                        profile={profile}
+                    />
+                )}
             </CardContent>
         </Card>
         

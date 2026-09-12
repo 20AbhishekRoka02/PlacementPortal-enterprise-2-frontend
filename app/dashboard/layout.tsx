@@ -9,7 +9,6 @@ export default function DashboardLayout({
     return (
         <>
         <DashboardSidebarProvider>
-            {/* <p className="text-center">This is layout text. </p> */}
             <section>{children}</section>
         </DashboardSidebarProvider>
         

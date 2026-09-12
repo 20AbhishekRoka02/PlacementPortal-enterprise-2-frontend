@@ -24,19 +24,15 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Allow only students
-    if (data.user?.role !== "student") {
-      return NextResponse.json(
-        {
-          detail: "Only students can log in through this portal.",
-        },
-        {
-          status: 403,
-        }
-      );
+    let is_staff = false;
+    if (["admin", "placement_officer", "university"].includes(data.user?.role)) {
+      is_staff = true;
     }
 
-    const response = NextResponse.json(data, {
+    const response = NextResponse.json({
+      ...data,
+      is_staff: is_staff
+    }, {
       status: 200,
     });
 

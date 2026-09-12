@@ -1,12 +1,19 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+interface UserProfile {
+  id: string;
+  name: string;
+  role: string;
+  is_staff: boolean; // Add this line
+}
+
 export async function GET() {
     try {
         const cookieStore = await cookies();
 
-        const response = await fetch(
-            `${process.env.BACKEND_URL}/student/profile/`,
+        const profile_res = await fetch(
+            `${process.env.BACKEND_URL}/api/auth/profile/`,
             {
                 headers: {
                     Cookie: cookieStore.toString(),
@@ -14,11 +21,30 @@ export async function GET() {
             }
         );
 
-        const data = await response.json();
-
-        return NextResponse.json(data, {
-            status: response.status,
+        const profile = await profile_res.json();
+        console.log("profile is: ", profile.data);
+        if (!profile.data.is_staff) {
+            const response = await fetch(
+                `${process.env.BACKEND_URL}/student/profile/`,
+                {
+                    headers: {
+                        Cookie: cookieStore.toString(),
+                    },
+                }
+            );
+            const data = await response.json();
+    
+            return NextResponse.json({
+                ...data,
+                is_staff: profile.is_staff
+            }, {
+                status: response.status,
+            });
+        }
+        return NextResponse.json(profile, {
+            status: profile_res.status,
         });
+
     } catch (error) {
         return NextResponse.json(
             {

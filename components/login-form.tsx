@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react"
+import { resourceLimits } from "worker_threads"
 
 const formSchema = z.object({
   email: z.email(),
@@ -134,6 +135,7 @@ export function LoginForm({
       });
 
       const result = await res.json();
+      console.log("result is: ", result);
 
       if (!res.ok) {
         let errorMessage = "Login failed.";
@@ -160,7 +162,13 @@ export function LoginForm({
         position: "top-center",
       });
 
-      router.push("/dashboard");
+      if (result.is_staff) {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
+      
+
     } catch (err) {
       toast.dismiss(loadingToast);
 

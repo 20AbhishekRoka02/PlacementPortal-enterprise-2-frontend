@@ -54,7 +54,6 @@ export default function AppSidebar() {
           headers: {
             "Content-Type": "application/json",
           },
-          // body: JSON.stringify(values),
         });
   
         if (!res.ok) throw new Error("Profile fetch failed");
@@ -132,13 +131,6 @@ export default function AppSidebar() {
 
             <Avatar className=" size-36 flex mx-16 lg:mx-12">
               <AvatarImage className='rounded-full grayscale  ' src={user.avatar} alt={user.name} />
-              {/* <Image 
-                    src="/avatar.svg"
-                    alt={user.name}
-                    width={24}
-                    height={24}
-                    className='h-6 w-6 object-cover object-center rounded-full'
-                  /> */}
               <AvatarFallback className="flex items-center justify-center rounded-lg ">CN</AvatarFallback>
             </Avatar>
             </a>
