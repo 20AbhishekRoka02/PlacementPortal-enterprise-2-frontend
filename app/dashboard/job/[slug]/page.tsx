@@ -3,6 +3,24 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import ApplyJobDialog from "@/components/dashboard/application/ApplyJobDialogBox";
+import { Profile } from "@/app/types/profile";
+interface CompanyUser {
+  id: number;
+  email: string;
+  full_name: string;
+  role: string;
+}
+
+interface Company {
+  id: number;
+  user: CompanyUser;
+  name: string;
+  website: string;
+  hr_phone_number: string;
+  hr_email: string;
+}
 
 interface JobAttribute {
   pk: number;
@@ -10,8 +28,24 @@ interface JobAttribute {
   data_type: "text" | "integer" | "decimal" | "boolean" | "enum" | "date";
   required: boolean;
   order: number;
-  value: string | number | boolean | null;
+  // value: string | number | boolean | null;
 }
+
+interface ApplicationStudent {
+  pk: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  batch: string;
+}
+
+interface Application {
+  id: number;
+  student: ApplicationStudent;
+  status: string;
+  applied_at: string;
+}
+
 interface Job {
   id: number;
   company: string;
@@ -24,11 +58,46 @@ interface Job {
   status: string;
   attributes: JobAttribute[] | null;
 }
-import { toast } from "sonner";
-import ApplyJobDialog from "@/components/dashboard/application/ApplyJobDialogBox";
 
 export default function JobDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const [profile, setProfile] =
+          useState<Profile | null>(null);
+
+  const fetchProfile = async () => {
+        try {
+            const response = await fetch(
+                "/api/profile",
+                {
+                    credentials: "include",
+                }
+            );
+
+            const data = await response.json();
+            console.log("data: ", data);
+
+            if (!response.ok) {
+                throw new Error(
+                    data?.message ||
+                        "Unable to fetch profile."
+                );
+            }
+
+            setProfile(data.data);
+            console.log("profile data: ", profile);
+        } catch (error: any) {
+            toast.error(
+                error?.message ||
+                    "Unable to fetch profile."
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchProfile();
+    }, []);
 
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +106,7 @@ export default function JobDetailPage() {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await fetch(`/api/jobs/${slug}`, {
+        const res = await fetch(`/api/jobs/${slug}/`, {
           credentials: "include",
         });
 

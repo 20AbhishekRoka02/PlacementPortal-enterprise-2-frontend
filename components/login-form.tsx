@@ -162,11 +162,7 @@ export function LoginForm({
         position: "top-center",
       });
 
-      if (result.is_staff) {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
-      }
+      router.push("/dashboard");
       
 
     } catch (err) {

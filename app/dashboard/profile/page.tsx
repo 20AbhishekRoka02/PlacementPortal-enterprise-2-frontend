@@ -13,26 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-type BaseProfile = {
-    id: number;
-    email: string;
-    role: string;
-    is_staff: boolean;
-};
-
-type StudentProfile =  BaseProfile & {
-    role: "student",
-    first_name: string;
-    last_name: string;
-    batch: string;
-};
-
-type StaffProfile = BaseProfile & {
-    role: "placement_officer" | "hod" | "admin";
-};
-
-type Profile = StudentProfile | StaffProfile;
+import { useDashboard } from "../DashboardSidebarProvider";
+import { Profile, StaffProfile, StudentProfile } from "@/app/types/profile";
 
 
 function StudentProfileForm({
@@ -42,9 +24,7 @@ function StudentProfileForm({
     onSubmit,
 }: {
     profile: StudentProfile;
-    setProfile: React.Dispatch<
-        React.SetStateAction<Profile | null>
-    >;
+    setProfile: React.Dispatch< React.SetStateAction<StudentProfile> >;
     updating: boolean;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }) {
@@ -139,58 +119,71 @@ function StaffProfileForm({
 
 
 export default function ProfilePage() {
-    const [profile, setProfile] =
-        useState<Profile | null>(null);
-
-    const [loading, setLoading] = useState(true);
+    const { profile, profileLoading } = useDashboard();
+    const [dashboardProfile, setDashboardProfile] = useState<Profile | null>(null);
     const [updating, setUpdating] = useState(false);
 
-    const fetchProfile = async () => {
-        try {
-            const response = await fetch(
-                "/api/profile",
-                {
-                    credentials: "include",
-                }
-            );
 
-            const data = await response.json();
-            console.log("data: ", data);
+    useEffect(() => { if (profile) { setDashboardProfile(profile); } }, [profile]);
 
-            if (!response.ok) {
-                throw new Error(
-                    data?.message ||
-                        "Unable to fetch profile."
-                );
-            }
+    if (profileLoading) {
+        return <div>Loading profile...</div>;
+    }
 
-            setProfile(data.data);
-            console.log("profile data: ", profile);
-        } catch (error: any) {
-            toast.error(
-                error?.message ||
-                    "Unable to fetch profile."
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
+    if (!dashboardProfile) {
+        return <div>Unable to load profile.</div>;
+    }
 
-    useEffect(() => {
-        fetchProfile();
-    }, []);
 
-    const handleChange = (
-        field: keyof StudentProfile,
-        value: string
-    ) => {
-        if (!profile) return;
 
-        setProfile({
-            ...profile,
-            [field]: value,
-        });
-    };
+    // const [loading, setLoading] = useState(true);
+
+    // const fetchProfile = async () => {
+    //     try {
+    //         const response = await fetch(
+    //             "/api/profile",
+    //             {
+    //                 credentials: "include",
+    //             }
+    //         );
+
+    //         const data = await response.json();
+    //         console.log("data: ", data);
+
+    //         if (!response.ok) {
+    //             throw new Error(
+    //                 data?.message ||
+    //                     "Unable to fetch profile."
+    //             );
+    //         }
+
+    //         setProfile(data.data);
+    //         console.log("profile data: ", profile);
+    //     } catch (error: any) {
+    //         toast.error(
+    //             error?.message ||
+    //                 "Unable to fetch profile."
+    //         );
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+
+    // useEffect(() => {
+    //     fetchProfile();
+    // }, []);
+
+    // const handleChange = (
+    //     field: keyof StudentProfile,
+    //     value: string
+    // ) => {
+    //     if (!profile) return;
+
+    //     setProfile({
+    //         ...profile,
+    //         [field]: value,
+    //     });
+    // };
 
     const handleSubmit = async (
         e: React.FormEvent
@@ -213,9 +206,9 @@ export default function ProfilePage() {
                     },
                     body: JSON.stringify({
                         first_name:
-                            profile.first_name,
+                            dashboardProfile.first_name,
                         last_name:
-                            profile.last_name,
+                            dashboardProfile.last_name,
                     }),
                 }
             );
@@ -240,21 +233,21 @@ export default function ProfilePage() {
         }
     };
 
-    if (loading) {
-        return (
-            <p className="text-muted-foreground mx-auto py-10 text-center">
-                Loading profile...
-            </p>
-        );
-    }
+    // if (loading) {
+    //     return (
+    //         <p className="text-muted-foreground mx-auto py-10 text-center">
+    //             Loading profile...
+    //         </p>
+    //     );
+    // }
 
-    if (!profile) {
-        return (
-            <p className="text-red-500">
-                Unable to load profile.
-            </p>
-        );
-    }
+    // if (!profile) {
+    //     return (
+    //         <p className="text-red-500">
+    //             Unable to load profile.
+    //         </p>
+    //     );
+    // }
 
     return (
         <Card className="max-w-3xl mx-auto my-10">
@@ -267,14 +260,14 @@ export default function ProfilePage() {
             <CardContent>
                 {profile.role === "student" ? (
                     <StudentProfileForm
-                        profile={profile}
-                        setProfile={setProfile}
+                        profile={dashboardProfile}
+                        setProfile={setDashboardProfile}
                         updating={updating}
                         onSubmit={handleSubmit}
                     />
                 ) : (
                     <StaffProfileForm
-                        profile={profile}
+                        profile={dashboardProfile}
                     />
                 )}
             </CardContent>
@@ -282,3 +275,5 @@ export default function ProfilePage() {
         
     );
 }
+
+

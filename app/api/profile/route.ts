@@ -22,8 +22,8 @@ export async function GET() {
         );
 
         const profile = await profile_res.json();
-        console.log("profile is: ", profile.data);
-        if (!profile.data.is_staff) {
+        console.log("profile is: ", profile);
+        if (!profile.is_staff) {
             const response = await fetch(
                 `${process.env.BACKEND_URL}/student/profile/`,
                 {

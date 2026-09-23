@@ -1,17 +1,13 @@
 "use client"
-import React from 'react'
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
 import {
   Avatar,
-  AvatarImage,
   AvatarFallback
 } from '@radix-ui/react-avatar';
-
-import Cookies from "js-cookie"
 
 import {
   Sidebar,
@@ -24,118 +20,97 @@ import {
   SidebarMenuItem,
   SidebarMenuButton
 } from "@/components/ui/sidebar"
+import { Profile } from '@/app/types/profile';
 
+interface AppSidebarProps {
+  profile: Profile | null;
+  profileLoading: boolean;
+}
 
+type MenuItem = {
+  key: string;
+  name: string;
+  url: string;
+};
 
-export default function AppSidebar() {
+export default function AppSidebar({
+  profile,
+  profileLoading
+}: AppSidebarProps) {
+  const router = useRouter();
   const [active, setActive] = useState<string | null>(null);
+
+  const sidebarMenuItems: MenuItem[] = [
+    {
+      key: "job",
+      name: "Jobs",
+      url: "/dashboard/job",
+    },
+    {
+      key: "application",
+      name: "Applications",
+      url: "/dashboard/application",
+    },
+  ];
 
   interface User {
     name: string,
     avatar: string,
     email: string,
-    role: string
+    role: string,
+    is_staff: boolean,
   }
-
-  const [user, setUser] = useState<User>({
-    name: "",
-    avatar: "https://github.com/shadcn.png",
-    email: "",
-    role: "student"
-  });
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-
-      try {
-        const res = await fetch("/api/profile", {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-  
-        if (!res.ok) throw new Error("Profile fetch failed");
-  
-        const result = await res.json();
-        setUser((preUser) => ({...preUser, name: result.full_name, email: result.email, role: result.role}));
-      } catch (err) {
-        console.error("Login error:", err);
-      }
-    }
-
-    fetchProfile();
-
-  }, []);
-
-
-  const sidebarMenuItems = [
-    {
-      key: "job",
-      name: "Jobs",
-      url: "/dashboard/job"
-    },
-    {
-      key: "application",
-      name: "Applications",
-      url: "/dashboard/application"
-    }
-  ]
 
   const handleClick = (key: string, url: string) => {
     setActive(key);
     router.push(url);
   }
 
-  const router = useRouter();
   const logout = async () => {
     try {
-        const res = await fetch("/api/auth/logout", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-        if (!res.ok) throw new Error("Logout failed");
+      if (!res.ok) throw new Error("Logout failed");
+      router.refresh();
 
-        const result = await res.json();
+    } catch (err) {
+      console.error("Login error:", err);
+    }
 
-      } catch (err) {
-        console.error("Login error:", err);
-      }
-
-    router.refresh();
-  }
-
-  
-
-  type MenuItem = {
-    key: string
-    name: string
-    url: string
   }
 
   return (
-
-
-    <Sidebar className=''>
+    <Sidebar>
       <SidebarHeader>
-        <div className=''>
+        <div>
           <h1 className='text-center text-wrap text-3xl font-bold py-6'>Admin Panel</h1>
           {/* h-8 w-8 */}
-          <div className=' '>
+          <div>
             <a href="/dashboard/profile">
-
-            <Avatar className=" size-36 flex mx-16 lg:mx-12">
-              <AvatarImage className='rounded-full grayscale  ' src={user.avatar} alt={user.name} />
-              <AvatarFallback className="flex items-center justify-center rounded-lg ">CN</AvatarFallback>
-            </Avatar>
+            <div className="mx-auto size-16 border-2 rounded-full flex items-center justify-center">
+              <p className="text-2xl font-semibold text-center">{profile?.email?.charAt(0).toUpperCase() ?? "U"}</p>
+            </div>
             </a>
           </div>
-          <p className='text-center'>{user.name}</p>
+          <div className="mt-2 text-center">
+            {profileLoading ? (
+              <p>Loading...</p>
+            ) : (
+              <>
+                <p>{profile?.email}</p>
+
+                <p className="text-sm text-muted-foreground">
+                  {profile?.role}
+                </p>
+              </>
+            )}
+          </div>
         </div>
       </ SidebarHeader>
       <SidebarContent>
@@ -149,15 +124,11 @@ export default function AppSidebar() {
                     onClick={() => handleClick(menu.key, menu.url)}
                     variant={"outline"}
                     className='justify-center'
-
                   >
                     {menu.name}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-
-
-
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
