@@ -28,7 +28,7 @@ interface JobAttribute {
   data_type: "text" | "integer" | "decimal" | "boolean" | "enum" | "date";
   required: boolean;
   order: number;
-  // value: string | number | boolean | null;
+  value: string | number | boolean | null;
 }
 
 interface ApplicationStudent {
@@ -48,7 +48,7 @@ interface Application {
 
 interface Job {
   id: number;
-  company: string;
+  company: Company;
   title: string;
   location: string;
   salary: string;
@@ -62,45 +62,46 @@ interface Job {
 export default function JobDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const [profile, setProfile] =
-          useState<Profile | null>(null);
+    useState<Profile | null>(null);
+  const [ProfileLoading, setProfileLoading] = useState(true);
 
   const fetchProfile = async () => {
-        try {
-            const response = await fetch(
-                "/api/profile",
-                {
-                    credentials: "include",
-                }
-            );
-
-            const data = await response.json();
-            console.log("data: ", data);
-
-            if (!response.ok) {
-                throw new Error(
-                    data?.message ||
-                        "Unable to fetch profile."
-                );
-            }
-
-            setProfile(data.data);
-            console.log("profile data: ", profile);
-        } catch (error: any) {
-            toast.error(
-                error?.message ||
-                    "Unable to fetch profile."
-            );
-        } finally {
-            setLoading(false);
+    try {
+      const response = await fetch(
+        "/api/profile",
+        {
+          credentials: "include",
         }
-    };
+      );
 
-    useEffect(() => {
-        fetchProfile();
-    }, []);
+      const data = await response.json();
+      console.log("data: ", data);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+          "Unable to fetch profile."
+        );
+      }
+
+      setProfile(data.data);
+      console.log("profile data: ", profile);
+    } catch (error: any) {
+      toast.error(
+        error?.message ||
+        "Unable to fetch profile."
+      );
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   const [job, setJob] = useState<Job | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [jobLoading, setJobLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
@@ -125,7 +126,7 @@ export default function JobDetailPage() {
       } catch (error) {
         console.error(error);
       } finally {
-        setLoading(false);
+        setJobLoading(false);
       }
     };
 
@@ -134,7 +135,9 @@ export default function JobDetailPage() {
     }
   }, [slug]);
 
-  if (loading) {
+  console.log("STATE JOB:", job);
+
+  if (jobLoading) {
     return (
       <div className="container mx-auto py-10 text-center">
         Loading...
@@ -161,7 +164,7 @@ export default function JobDetailPage() {
         <h1 className="text-3xl font-bold">{job!.title}</h1>
 
         <p className="mt-2 text-muted-foreground">
-          {job!.company}
+          {job!.company.name}
         </p>
       </div>
 

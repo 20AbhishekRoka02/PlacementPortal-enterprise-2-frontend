@@ -1,0 +1,479 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Plus, Trash2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useDashboard } from "../../DashboardSidebarProvider";
+
+
+// Same interfaces from [slug]/page.tsx
+
+interface CompanyUser {
+  id: number;
+  email: string;
+  is_staff: boolean;
+  full_name: string;
+  role: string;
+}
+
+interface Company {
+  id: number;
+  user: CompanyUser;
+  name: string;
+  website: string;
+  hr_phone_number: string;
+  hr_email: string;
+}
+
+interface JobAttribute {
+  pk: number;
+  name: string;
+  data_type:
+  | "text"
+  | "integer"
+  | "decimal"
+  | "boolean"
+  | "enum"
+  | "date";
+  required: boolean;
+  order: number;
+  value: string | number | boolean | null;
+}
+
+interface Job {
+  id: number;
+  company: Company;
+  title: string;
+  location: string;
+  salary: string;
+  deadline: string;
+  batch: string;
+  description: string;
+  status: string;
+  attributes: JobAttribute[] | null;
+}
+
+export default function CreateJobPage() {
+  const router = useRouter();
+  const { profile } = useDashboard();
+
+  const [company, setCompany] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [salary, setSalary] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const [batch, setBatch] = useState("");
+
+  const [attributes, setAttributes] = useState<JobAttribute[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [showCompanyForm, setShowCompanyForm] = useState(false);
+  const [newCompany, setNewCompany] = useState({ name: '', website: '', hr_email: '', hr_phone_number: '' });
+
+  const addAttribute = () => {
+    const newAttribute: JobAttribute = {
+      pk: Date.now(),
+      name: "",
+      data_type: "text",
+      required: false,
+      order: attributes.length + 1,
+      value: null,
+    };
+
+    setAttributes((prev) => [...prev, newAttribute]);
+  };
+
+  const updateAttribute = (
+    pk: number,
+    field: keyof JobAttribute,
+    value: string | boolean
+  ) => {
+    setAttributes((prev) =>
+      prev.map((attribute) =>
+        attribute.pk === pk
+          ? {
+            ...attribute,
+            [field]: value,
+          }
+          : attribute
+      )
+    );
+  };
+
+  const removeAttribute = (pk: number) => {
+    setAttributes((prev) =>
+      prev
+        .filter((attribute) => attribute.pk !== pk)
+        .map((attribute, index) => ({
+          ...attribute,
+          order: index + 1,
+        }))
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const jobData = {
+      company,
+      title,
+      description,
+      location,
+      salary,
+      deadline,
+      batch,
+      attributes,
+    };
+
+    console.log("CREATE JOB:", jobData);
+
+    // We will connect the POST API here later.
+  };
+
+  const handleAddCompany = () => {
+    setShowCompanyForm(true);
+  };
+
+  const handleCompanySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile) return;
+    
+    const companyUser: CompanyUser = {
+      id: profile.id,
+      full_name: "",
+      email: profile.email,
+      is_staff: profile.is_staff,
+      role: profile.role,
+    };
+
+    setCompanies((prev) => [...prev, { 
+      id: Date.now(), 
+      user: companyUser, 
+      ...newCompany 
+    }]);
+    setNewCompany({ name: '', website: '', hr_email: '', hr_phone_number: '' });
+    setShowCompanyForm(false);
+  };
+
+  
+
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="mx-auto max-w-5xl px-6 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Create Job</h1>
+          <p className="mt-2 text-muted-foreground">
+            Add a new job opportunity for students.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Job Information */}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Job Information</CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-5">
+              {/* Company Name */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Company
+                </label>
+
+                <Select value={company} onValueChange={setCompany} required>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a company" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companies.map((comp) => (
+                      <SelectItem key={comp.id} value={comp.name}>{comp.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleAddCompany} variant="outline">
+                  <Plus className="mr-2 h-4 w-4" /> Add Company
+                </Button>
+              </div>
+
+              {showCompanyForm && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Add Company</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleCompanySubmit} className="space-y-4">
+                      <Input placeholder="Company Name" value={newCompany.name} onChange={(e) => setNewCompany({ ...newCompany, name: e.target.value })} required />
+                      <Input placeholder="Website" value={newCompany.website} onChange={(e) => setNewCompany({ ...newCompany, website: e.target.value })} required />
+                      <Input placeholder="HR Email" value={newCompany.hr_email} onChange={(e) => setNewCompany({ ...newCompany, hr_email: e.target.value })} required />
+                      <Input placeholder="HR Phone Number" value={newCompany.hr_phone_number} onChange={(e) => setNewCompany({ ...newCompany, hr_phone_number: e.target.value })} required />
+                      <Button type="submit">Submit</Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Job Title
+                </label>
+
+                <Input
+                  placeholder="e.g. Full Stack Developer"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Description
+                </label>
+
+                <div>editor</div>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Location
+                  </label>
+
+                  <Input
+                    placeholder="e.g. Gurugram"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Salary
+                  </label>
+
+                  <Input
+                    type="number"
+                    placeholder="e.g. 13000"
+                    value={salary}
+                    onChange={(e) => setSalary(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Deadline
+                  </label>
+
+                  <Input
+                    type="datetime-local"
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Batch
+                  </label>
+
+                  <Input
+                    placeholder="e.g. 2025-26"
+                    value={batch}
+                    onChange={(e) => setBatch(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Dynamic Attributes */}
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Job Attributes</CardTitle>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Add additional fields students need to provide when
+                  applying.
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addAttribute}
+              >
+                <Plus className="size-4" />
+                Add Attribute
+              </Button>
+            </CardHeader>
+
+            <CardContent>
+              {attributes.length === 0 ? (
+                <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
+                  No attributes added yet.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {attributes.map((attribute) => (
+                    <div
+                      key={attribute.pk}
+                      className="rounded-lg border p-4"
+                    >
+                      <div className="grid gap-4 md:grid-cols-[1fr_200px_auto]">
+                        {/* Attribute Name */}
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">
+                            Attribute Name
+                          </label>
+
+                          <Input
+                            placeholder="e.g. CGPA"
+                            value={attribute.name}
+                            onChange={(e) =>
+                              updateAttribute(
+                                attribute.pk,
+                                "name",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+
+                        {/* Data Type */}
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">
+                            Data Type
+                          </label>
+
+                          <Select
+                            value={attribute.data_type}
+                            onValueChange={(value) =>
+                              updateAttribute(
+                                attribute.pk,
+                                "data_type",
+                                value
+                              )
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              <SelectItem value="text">
+                                Text
+                              </SelectItem>
+
+                              <SelectItem value="integer">
+                                Integer
+                              </SelectItem>
+
+                              <SelectItem value="decimal">
+                                Decimal
+                              </SelectItem>
+
+                              <SelectItem value="boolean">
+                                Boolean
+                              </SelectItem>
+
+                              <SelectItem value="enum">
+                                Enum
+                              </SelectItem>
+
+                              <SelectItem value="date">
+                                Date
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Delete */}
+
+                        <div className="flex items-end">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                              removeAttribute(attribute.pk)
+                            }
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Required */}
+
+                      <div className="mt-4 flex items-center gap-2">
+                        <Checkbox
+                          checked={attribute.required}
+                          onCheckedChange={(checked) =>
+                            updateAttribute(
+                              attribute.pk,
+                              "required",
+                              checked === true
+                            )
+                          }
+                        />
+
+                        <label className="text-sm">
+                          Required field
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Buttons */}
+
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+            >
+              Cancel
+            </Button>
+
+            <Button type="submit">
+              Create Job
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

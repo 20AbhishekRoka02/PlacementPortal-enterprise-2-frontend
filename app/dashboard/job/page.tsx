@@ -5,6 +5,10 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { DataTable } from "@/components/dashboard/data-table";
 import { generateColumns } from "@/components/dashboard/dynamic-columns";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
+import { useDashboard } from "../DashboardSidebarProvider";
+
 
 const response = {
   data: [
@@ -40,6 +44,7 @@ export default function JobsPage() {
   }
 
   const [jobs, setJobs] = useState<Job[]>([]);
+  
 
 
   useEffect(() => {
@@ -70,12 +75,24 @@ export default function JobsPage() {
   }, []);
 
   const columns = generateColumns(jobs);
-
+  const {profile, profileLoading} = useDashboard();
+ 
   return (
-    <DataTable
-      columns={columns}
-      data={jobs}
-      onRowClick={(row) => router.push(`/dashboard/job/${row.id}`)}
-    />
+    <div>
+    {profile?.is_staff && (
+
+      <Button
+      className="my-3 ml-4 py-5 px-4"
+      onClick={()=> router.push('/dashboard/job/create')}
+      ><PlusIcon/>Add Jobs</Button>
+    )}
+   
+      
+      <DataTable
+        columns={columns}
+        data={jobs}
+        onRowClick={(row) => router.push(`/dashboard/job/${row.id}`)}
+      />
+    </div>
   );
 }

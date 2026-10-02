@@ -40,18 +40,26 @@ export default function AppSidebar({
   const router = useRouter();
   const [active, setActive] = useState<string | null>(null);
 
-  const sidebarMenuItems: MenuItem[] = [
-    {
-      key: "job",
-      name: "Jobs",
-      url: "/dashboard/job",
-    },
-    {
-      key: "application",
-      name: "Applications",
-      url: "/dashboard/application",
-    },
-  ];
+ const sidebarMenuItems: MenuItem[] = profile?.is_staff
+  ? [
+      {
+        key: "job",
+        name: "Jobs",
+        url: "/dashboard/job",
+      },
+    ]
+  : [
+      {
+        key: "job",
+        name: "Jobs",
+        url: "/dashboard/job",
+      },
+      {
+        key: "application",
+        name: "Applications",
+        url: "/dashboard/application",
+      },
+    ];
 
   interface User {
     name: string,
@@ -93,9 +101,9 @@ export default function AppSidebar({
           {/* h-8 w-8 */}
           <div>
             <a href="/dashboard/profile">
-            <div className="mx-auto size-16 border-2 rounded-full flex items-center justify-center">
-              <p className="text-2xl font-semibold text-center">{profile?.email?.charAt(0).toUpperCase() ?? "U"}</p>
-            </div>
+              <div className="mx-auto size-16 border-2 rounded-full flex items-center justify-center">
+                <p className="text-2xl font-semibold text-center">{profile?.email?.charAt(0).toUpperCase() ?? "U"}</p>
+              </div>
             </a>
           </div>
           <div className="mt-2 text-center">
@@ -123,7 +131,7 @@ export default function AppSidebar({
                     isActive={active === menu.key}
                     onClick={() => handleClick(menu.key, menu.url)}
                     variant={"outline"}
-                    className='justify-center'
+                    className='justify-center mb-3'
                   >
                     {menu.name}
                   </SidebarMenuButton>
