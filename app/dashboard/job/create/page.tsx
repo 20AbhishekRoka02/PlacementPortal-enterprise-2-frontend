@@ -13,7 +13,19 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import CkEditor from "../../../../components/dashboard/job/CKEditor";
+// import CkEditor from "@/components/dashboard/job/CKEditor";
+
+import dynamic from "next/dynamic";
+
+// Disable Server-Side Rendering for CKEditor
+const CkEditor = dynamic(
+  () => import("@/components/dashboard/job/CKEditor"),
+  { 
+    ssr: false,
+    loading: () => <p>Loading editor...</p> 
+  }
+);
+// import CkEditor from "../../../../components/dashboard/job/CKEditor";
 
 interface CompanyUser {
   id: number;
