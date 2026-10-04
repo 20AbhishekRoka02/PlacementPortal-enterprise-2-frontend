@@ -40,26 +40,30 @@ export default function AppSidebar({
   const router = useRouter();
   const [active, setActive] = useState<string | null>(null);
 
- const sidebarMenuItems: MenuItem[] = profile?.is_staff
-  ? [
-      {
-        key: "job",
-        name: "Jobs",
-        url: "/dashboard/job",
-      },
-    ]
-  : [
-      {
-        key: "job",
-        name: "Jobs",
-        url: "/dashboard/job",
-      },
-      {
-        key: "application",
-        name: "Applications",
-        url: "/dashboard/application",
-      },
-    ];
+  const sidebarMenuItems: MenuItem[] = profileLoading
+    ? []
+    : profile?.is_staff
+      ? [
+          {
+            key: "job",
+            name: "Jobs",
+            url: "/dashboard/job",
+          },
+        ]
+      : profile
+        ? [
+            {
+              key: "job",
+              name: "Jobs",
+              url: "/dashboard/job",
+            },
+            {
+              key: "application",
+              name: "Applications",
+              url: "/dashboard/application",
+            },
+          ]
+        : [];
 
   interface User {
     name: string,

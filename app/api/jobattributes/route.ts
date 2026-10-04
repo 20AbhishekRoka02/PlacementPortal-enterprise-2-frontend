@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const res = await fetch(`${process.env.BACKEND_URL}/job/jobs/`, {
+    const res = await fetch(`${process.env.BACKEND_URL}/job/attributes/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       status: res.status,
     });
   } catch (error) {
-    console.error("Error fetching jobs:", error);
+    console.error("Error fetching job attributes:", error);
 
     return NextResponse.json(
       { message: "Internal Server Error" },
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const res = await fetch(`${process.env.BACKEND_URL}/job/jobs/`, {
+    const res = await fetch(`${process.env.BACKEND_URL}/job/attributes/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
       status: res.status,
     });
   } catch (error) {
-    console.error("Error creating job:", error);
+    console.error("Error creating job attribute:", error);
 
     return NextResponse.json(
       { message: "Internal Server Error" },
@@ -70,4 +70,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

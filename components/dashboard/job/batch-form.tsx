@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Plus, X, Check } from "lucide-react";
 
@@ -21,11 +21,28 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-interface Batch {
+export interface Batch {
   id: number;
-  course_name: string;
+  course_name?: string;
+  course?: string | {
+    name?: string;
+    course_name?: string;
+    title?: string;
+  };
+  name?: string;
   start_year: string;
   end_year: string;
+}
+
+function getBatchLabel(batch: Batch) {
+  const courseName =
+    batch.course_name ||
+    (typeof batch.course === "string"
+      ? batch.course
+      : batch.course?.course_name || batch.course?.name || batch.course?.title) ||
+    batch.name;
+
+  return courseName || "Unnamed batch";
 }
 
 interface BatchFormProps {
@@ -44,6 +61,35 @@ export default function BatchForm({
     start_year: "",
     end_year: "",
   });
+
+  useEffect(() => {
+    const fetchBatches = async () => {
+      try {
+        const response = await fetch("/api/batches", {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch batches.");
+        }
+
+        const payload: unknown = await response.json();
+        const list = Array.isArray(payload)
+          ? payload
+          : payload && typeof payload === "object" && "data" in payload && Array.isArray(payload.data)
+            ? payload.data
+            : payload && typeof payload === "object" && "results" in payload && Array.isArray(payload.results)
+              ? payload.results
+              : [];
+
+        setBatches(list as Batch[]);
+      } catch (error) {
+        console.error("Unable to load batches:", error);
+      }
+    };
+
+    fetchBatches();
+  }, []);
 
   const handleAddBatch = () => {
     setShowBatchForm((prev) => !prev);
@@ -126,8 +172,7 @@ export default function BatchForm({
                     key={batch.id}
                     className="flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-sm"
                   >
-                    {batch.course_name}-{batch.start_year}-
-                    {batch.end_year}
+                    {getBatchLabel(batch)}
 
                     <span
                       role="button"
@@ -169,8 +214,7 @@ export default function BatchForm({
                       onClick={() => handleBatchSelect(batch)}
                     >
                       <span>
-                        {batch.course_name}-{batch.start_year}-
-                        {batch.end_year}
+                        {getBatchLabel(batch)}
                       </span>
 
                       {isSelected && (

@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const res = await fetch(`${process.env.BACKEND_URL}/job/jobs/`, {
+    const res = await fetch(`${process.env.BACKEND_URL}/company/companies/`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -22,11 +22,9 @@ export async function GET(req: NextRequest) {
 
     const data = await res.json();
 
-    return NextResponse.json(data, {
-      status: res.status,
-    });
+    return NextResponse.json(data, { status: res.status });
   } catch (error) {
-    console.error("Error fetching jobs:", error);
+    console.error("Error fetching companies:", error);
 
     return NextResponse.json(
       { message: "Internal Server Error" },
@@ -47,22 +45,29 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const res = await fetch(`${process.env.BACKEND_URL}/job/jobs/`, {
+    const { id: userId, ...companyData } = body;
+
+    // The form sends the signed-in account ID as `id`; the backend serializer
+    // represents that foreign key as `user`.
+    const backendBody = {
+      ...companyData,
+      ...(userId !== undefined ? { user: userId } : {}),
+    };
+
+    const res = await fetch(`${process.env.BACKEND_URL}/company/companies/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(backendBody),
     });
 
     const data = await res.json();
 
-    return NextResponse.json(data, {
-      status: res.status,
-    });
+    return NextResponse.json(data, { status: res.status });
   } catch (error) {
-    console.error("Error creating job:", error);
+    console.error("Error creating company:", error);
 
     return NextResponse.json(
       { message: "Internal Server Error" },
@@ -70,4 +75,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

@@ -69,3 +69,47 @@ export async function GET(
     );
   }
 }
+
+export async function PUT(
+  req: NextRequest,
+  { params }: RouteContext
+) {
+  const { slug } = await params;
+
+  try {
+    const accessToken = req.cookies.get("access")?.value;
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
+    const res = await fetch(
+      `${process.env.BACKEND_URL}/job/applications/${slug}/`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    const data = await res.json();
+
+    return NextResponse.json(data, {
+      status: res.status,
+    });
+  } catch (error) {
+    console.error("Error updating application:", error);
+
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}

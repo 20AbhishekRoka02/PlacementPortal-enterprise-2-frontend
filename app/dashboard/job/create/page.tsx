@@ -1,6 +1,6 @@
 "use client";
 
-import BatchForm from "@/components/dashboard/job/batch-form";
+import BatchForm, { type Batch } from "@/components/dashboard/job/batch-form";
 import CompanyForm from "@/components/dashboard/job/company-form";
 import { JobAttributes } from "@/components/dashboard/job/jobattributes";
 
@@ -46,6 +46,7 @@ interface Company {
 
 interface JobAttribute {
   pk: number;
+  attribute_id: number | null;
   name: string;
   data_type:
   | "text"
@@ -59,13 +60,6 @@ interface JobAttribute {
   value: string | number | boolean | null;
   visible_to_company: boolean;
   filterable: boolean;
-}
-
-interface Batch {
-  id: number;
-  course_name: string;
-  start_year: string;
-  end_year: string;
 }
 
 interface JobForm {
@@ -95,8 +89,10 @@ export default function CreateJobPage() {
 
   // Add a new dynamic attribute
   const addAttribute = () => {
+    const pk = Date.now();
     const newAttribute: JobAttribute = {
-      pk: Date.now(),
+      pk,
+      attribute_id: null,
       name: "",
       data_type: "text",
       required: false,
@@ -110,13 +106,15 @@ export default function CreateJobPage() {
       ...prev,
       attributes: [...prev.attributes, newAttribute],
     }));
+
+    return pk;
   };
 
   // Update an existing attribute
   const updateAttribute = (
     pk: number,
     field: keyof JobAttribute,
-    value: string | number | boolean
+    value: string | number | boolean | null
   ) => {
     setJob((prev) => ({
       ...prev,

@@ -16,7 +16,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useDashboard } from "@/app/dashboard/DashboardSidebarProvider";
 
 interface CompanyUser {
@@ -48,12 +49,35 @@ interface CompanyFormProps {
     onCompanySelect: (company: Company) => void;
 }
 
+function getApiErrorMessage(payload: unknown): string {
+    if (typeof payload === "string") return payload;
+    if (!payload || typeof payload !== "object") return "Unable to create company.";
+
+    const errors = payload as Record<string, unknown>;
+    const summary = errors.message ?? errors.detail;
+    if (typeof summary === "string") return summary;
+
+    const fieldErrors = Object.entries(errors)
+        .map(([field, value]) => {
+            const messages = Array.isArray(value)
+                ? value.map(String).join(", ")
+                : typeof value === "string"
+                    ? value
+                    : JSON.stringify(value);
+            return `${field}: ${messages}`;
+        })
+        .join("; ");
+
+    return fieldErrors || "Unable to create company.";
+}
+
 export default function CompanyForm({
     onCompanySelect,
 }: CompanyFormProps) {
     const { profile } = useDashboard();
 
     const [companies, setCompanies] = useState<Company[]>([]);
+    const [savingCompany, setSavingCompany] = useState(false);
     const [selectedCompany, setSelectedCompany] = useState<string>("");
     const [showCompanyForm, setShowCompanyForm] = useState(false);
 
@@ -65,6 +89,35 @@ export default function CompanyForm({
             hr_phone_number: "",
             hr_email: "",
         });
+
+    useEffect(() => {
+        const fetchCompanies = async () => {
+            try {
+                const response = await fetch("/api/companies", {
+                    credentials: "include",
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch companies.");
+                }
+
+                const payload: unknown = await response.json();
+                const list = Array.isArray(payload)
+                    ? payload
+                    : payload && typeof payload === "object" && "data" in payload && Array.isArray(payload.data)
+                        ? payload.data
+                        : payload && typeof payload === "object" && "results" in payload && Array.isArray(payload.results)
+                            ? payload.results
+                            : [];
+
+                setCompanies(list as Company[]);
+            } catch (error) {
+                console.error("Unable to load companies:", error);
+            }
+        };
+
+        fetchCompanies();
+    }, []);
 
     const handleAddCompany = () => {
         setShowCompanyForm((prev) => !prev);
@@ -78,58 +131,101 @@ export default function CompanyForm({
         }
     };
 
-    const handleCompanySubmit = () =>{
-
+    const handleCompanySubmit = async () => {
         if (!profile) {
-            console.error("No logged-in user found");
+            toast.error("Unable to identify the signed-in user.");
             return;
         }
 
-        /*
-         * This is the company object we are creating.
-         *
-         * The user comes from the logged-in profile.
-         */
-        const newCompany: Company = {
-            id: Date.now(),
-            user: {
-                id: profile.id,
-                email: profile.email,
-                is_staff: profile.is_staff,
-                full_name: "",
-                role: profile.role,
-            },
-            name: companyForm.name,
-            website: companyForm.website,
-            hr_phone_number: companyForm.hr_phone_number,
-            hr_email: companyForm.hr_email,
-        };
+        if (
+            !companyForm.name.trim() ||
+            !companyForm.website.trim() ||
+            !companyForm.hr_email.trim() ||
+            !companyForm.hr_phone_number.trim()
+        ) {
+            toast.error("Fill in all company and HR fields.");
+            return;
+        }
 
-        // Add company to the company list
-        setCompanies((prev) => [
-            ...prev,
-            newCompany,
-        ]);
+        setSavingCompany(true);
 
-        // Automatically select the newly created company
-        setSelectedCompany(newCompany.id.toString());
+        try {
+            const enteredWebsite = companyForm.website.trim();
+            const website = enteredWebsite
+                .replace(/^http:\/\//i, "https://")
+                .replace(/^(?!https:\/\/)/i, "https://");
 
-        // Send the complete company object to parent
-        onCompanySelect(newCompany);
+            const response = await fetch("/api/companies", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    id: profile.id,
+                    name: companyForm.name.trim(),
+                    website,
+                    hr_phone_number: companyForm.hr_phone_number.trim(),
+                    hr_email: companyForm.hr_email.trim(),
+                }),
+            });
 
-        // Close the form
-        setShowCompanyForm(false);
+            const payload: unknown = await response.json();
+            if (!response.ok) {
+                throw new Error(getApiErrorMessage(payload));
+            }
 
-        // Reset form
-        setCompanyForm({
-            user: profile.id,
-            name: "",
-            website: "",
-            hr_phone_number: "",
-            hr_email: "",
-        });
+            const responseBody = payload as Record<string, unknown>;
+            const companyData = (
+                responseBody.company ?? responseBody.data ?? payload
+            ) as Record<string, unknown>;
+            const userData = companyData.user;
+            const responseUser =
+                userData && typeof userData === "object"
+                    ? (userData as Partial<CompanyUser>)
+                    : null;
+            const id = Number(companyData.id);
 
-        console.log("COMPANY CREATED:", newCompany);
+            if (!Number.isFinite(id)) {
+                throw new Error("The server did not return the created company.");
+            }
+
+            const newCompany: Company = {
+                id,
+                user: {
+                    id: Number(responseUser?.id ?? userData ?? profile.id),
+                    email: responseUser?.email ?? profile.email,
+                    is_staff: responseUser?.is_staff ?? profile.is_staff,
+                    full_name: responseUser?.full_name ?? "",
+                    role: responseUser?.role ?? profile.role,
+                },
+                name: String(companyData.name ?? companyForm.name.trim()),
+                website: String(companyData.website ?? companyForm.website.trim()),
+                hr_phone_number: String(
+                    companyData.hr_phone_number ?? companyForm.hr_phone_number.trim()
+                ),
+                hr_email: String(companyData.hr_email ?? companyForm.hr_email.trim()),
+            };
+
+            setCompanies((prev) => [...prev, newCompany]);
+            setSelectedCompany(newCompany.id.toString());
+            onCompanySelect(newCompany);
+            setShowCompanyForm(false);
+            setCompanyForm({
+                user: profile.id,
+                name: "",
+                website: "",
+                hr_phone_number: "",
+                hr_email: "",
+            });
+            toast.success("Company created and selected.");
+        } catch (error) {
+            toast.error(
+                error instanceof Error ? error.message : "Unable to create company."
+            );
+        } finally {
+            setSavingCompany(false);
+        }
     };
 
     const handleCompanySelect = (value: string) => {
@@ -230,7 +326,7 @@ export default function CompanyForm({
 
                             {/* Website */}
                             <Input
-                                placeholder="Website"
+                                placeholder="https://example.com"
                                 value={companyForm.website}
                                 onChange={(e) =>
                                     setCompanyForm((prev) => ({
@@ -269,8 +365,12 @@ export default function CompanyForm({
                                 required
                             />
 
-                            <Button type="submit" onClick={handleCompanySubmit}>
-                                Submit
+                            <Button
+                                type="button"
+                                onClick={handleCompanySubmit}
+                                disabled={savingCompany}
+                            >
+                                {savingCompany ? "Creating..." : "Submit"}
                             </Button>
 
                         </div>
