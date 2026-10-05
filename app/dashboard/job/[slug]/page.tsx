@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import ApplyJobDialog from "@/components/dashboard/application/ApplyJobDialogBox";
 import { Profile } from "@/app/types/profile";
+import { DataTable } from "@/components/dashboard/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 interface CompanyUser {
   id: number;
   email: string;
@@ -46,6 +48,34 @@ interface Application {
   applied_at: string;
 }
 
+const applicationColumns: ColumnDef<Application>[] = [
+  {
+    accessorKey: "student.first_name",
+    header: "First Name",
+  },
+  {
+    accessorKey: "student.last_name",
+    header: "Last Name",
+  },
+  {
+    accessorKey: "student.email",
+    header: "Email",
+  },
+  {
+    accessorKey: "student.batch",
+    header: "Batch",
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+  },
+  {
+    accessorKey: "applied_at",
+    header: "Applied At",
+    cell: ({ row }) => new Date(row.original.applied_at).toLocaleString("en-IN"),
+  },
+];
+
 interface Job {
   id: number;
   company: Company;
@@ -84,8 +114,7 @@ export default function JobDetailPage() {
         );
       }
 
-      setProfile(data.data);
-      console.log("profile data: ", profile);
+      setProfile(data);
     } catch (error: any) {
       toast.error(
         error?.message ||
@@ -101,8 +130,35 @@ export default function JobDetailPage() {
   }, []);
 
   const [job, setJob] = useState<Job | null>(null);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [applicationsLoading, setApplicationsLoading] = useState(true);
   const [jobLoading, setJobLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const res = await fetch("/api/application", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch applications.");
+        }
+
+        const result = await res.json();
+        console.log("job applications response:", result);
+        setApplications(Array.isArray(result.data) ? result.data : []);
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+      } finally {
+        setApplicationsLoading(false);
+      }
+    };
+
+    fetchApplications();
+  }, []);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -135,7 +191,7 @@ export default function JobDetailPage() {
     }
   }, [slug]);
 
-  console.log("STATE JOB:", job);
+ 
 
   if (jobLoading) {
     return (
@@ -232,6 +288,27 @@ export default function JobDetailPage() {
           }}
         />
       </div>
+
+      {profile?.is_staff && (
+        <div>
+          <h2 className="mb-3 text-xl font-semibold">Applications</h2>
+          <div className="mb-3 flex items-center justify-start">
+            <Button
+              className="bg-green-600 text-white hover:bg-green-700"
+              disabled={!applications.length}
+            >
+              Export
+            </Button>
+          </div>
+          {applicationsLoading ? (
+            <p className="text-muted-foreground">Loading applications...</p>
+          ) : applications.length ? (
+            <DataTable columns={applicationColumns} data={applications} />
+          ) : (
+            <p className="text-muted-foreground">No applications found.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

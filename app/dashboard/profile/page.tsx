@@ -24,7 +24,7 @@ function StudentProfileForm({
     onSubmit,
 }: {
     profile: StudentProfile;
-    setProfile: React.Dispatch< React.SetStateAction<StudentProfile> >;
+    setProfile: React.Dispatch<React.SetStateAction<Profile | null>>;
     updating: boolean;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }) {
@@ -190,7 +190,7 @@ export default function ProfilePage() {
     ) => {
         e.preventDefault();
 
-        if (!profile) return;
+        if (!dashboardProfile || dashboardProfile.role !== "student") return;
 
         setUpdating(true);
 
@@ -258,7 +258,7 @@ export default function ProfilePage() {
             </CardHeader>
 
             <CardContent>
-                {profile.role === "student" ? (
+                {dashboardProfile.role === "student" ? (
                     <StudentProfileForm
                         profile={dashboardProfile}
                         setProfile={setDashboardProfile}
