@@ -13,6 +13,8 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 // import CkEditor from "@/components/dashboard/job/CKEditor";
 
 import dynamic from "next/dynamic";
@@ -74,6 +76,8 @@ interface JobForm {
 }
 
 export default function CreateJobPage() {
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
   const [job, setJob] = useState<JobForm>({
     company: null,
     title: "",
@@ -139,10 +143,77 @@ export default function CreateJobPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log("JOB CREATION FORM :", job);
+    if (!job.company) {
+      toast.error("Select a company before creating the job.");
+      return;
+    }
+    if (job.batch.length === 0) {
+      toast.error("Select a batch before creating the job.");
+      return;
+    }
+    if (job.batch.length > 1) {
+      toast.error("Select one batch for this job.");
+      return;
+    }
+
+    const attributes = job.attributes.map((attribute, index) => ({
+      pk: attribute.attribute_id ?? attribute.pk,
+      name: attribute.name.trim(),
+      data_type: attribute.data_type,
+      required: attribute.required,
+      order: index,
+    }));
+
+    if (attributes.some((attribute) => !attribute.name)) {
+      toast.error("Choose or enter a name for every job attribute.");
+      return;
+    }
+
+    const payload = {
+      company: job.company.id,
+      title: job.title.trim(),
+      location: job.location.trim(),
+      salary: job.salary,
+      deadline: new Date(job.deadline).toISOString(),
+      batch: job.batch[0].id,
+      description: job.description,
+      attributes,
+    };
+
+    console.log("Creating job with payload:", payload);
+
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/jobs", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result: unknown = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const errorData = result && typeof result === "object"
+          ? result as Record<string, unknown>
+          : {};
+        const detail = errorData.message ?? errorData.detail;
+        const fieldErrors = Object.entries(errorData)
+          .filter(([key]) => key !== "message" && key !== "detail")
+          .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : String(value)}`)
+          .join("; ");
+        throw new Error(typeof detail === "string" ? detail : fieldErrors || "Unable to create job.");
+      }
+
+      toast.success("Job created successfully.");
+      router.push("/dashboard/job");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to create job.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -317,9 +388,10 @@ export default function CreateJobPage() {
           <div className="mt-6">
             <button
               type="submit"
+              disabled={submitting}
               className="rounded-md bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
             >
-              Create Job
+              {submitting ? "Creating..." : "Create Job"}
             </button>
           </div>
         </form>
