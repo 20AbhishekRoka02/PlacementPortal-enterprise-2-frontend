@@ -138,7 +138,7 @@ export default function JobDetailPage() {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const res = await fetch("/api/application", {
+        const res = await fetch(`/api/application/?job_id=${slug}`, {
           method: "GET",
           credentials: "include",
         });
@@ -157,8 +157,10 @@ export default function JobDetailPage() {
       }
     };
 
-    fetchApplications();
-  }, []);
+    if (slug) {
+      fetchApplications();
+    }
+  }, [slug]);
 
   useEffect(() => {
     const fetchJob = async () => {

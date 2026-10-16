@@ -48,7 +48,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const res = await fetch(`${process.env.BACKEND_URL}/job/applications/`, {
+    const backendUrl = new URL(`${process.env.BACKEND_URL}/job/applications/`);
+    const jobId = req.nextUrl.searchParams.get("job_id");
+
+    if (jobId) {
+      backendUrl.searchParams.set("job_id", jobId);
+    }
+
+    const res = await fetch(backendUrl, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
