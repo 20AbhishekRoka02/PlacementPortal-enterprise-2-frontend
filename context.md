@@ -21,6 +21,7 @@ This is a Next.js App Router frontend for a placement portal with staff and stud
 
 - Keep browser-to-server calls same-origin: client components call `/api/...`; `app/api/**/route.ts` handlers communicate with the backend using `BACKEND_URL`. This keeps backend URLs and cookie forwarding in the server-side boundary. Follow neighboring handlers for method, payload, cookie, status, and error forwarding.
 - Existing API handler groups cover authentication, profile, jobs, applications, resumes, companies, batches, and job attributes. Dynamic job and application handlers are under their respective `[slug]` folders.
+- Job creation loads existing batches through `/api/batches` and selects one batch; batch creation is not part of the job form.
 - Login and forgot-password form behavior lives in [components/login-form.tsx](components/login-form.tsx). Login and logout use internal auth routes; the forgot-password request uses `/api/auth/forgot-password`.
 - The reset link resolves to `/reset-password/[uid]/[token]` in [app/reset-password/[uid]/[token]/page.tsx](app/reset-password/[uid]/[token]/page.tsx), which posts the `uid`, `token`, and new password values to `/api/auth/forgot-password/confirm`. The Route Handler forwards to the backend password-reset confirmation endpoint.
 - [app/api/profile/route.ts](app/api/profile/route.ts) combines the authenticated user's role/profile response with the student profile when applicable; profile updates are forwarded from this same-origin handler.
