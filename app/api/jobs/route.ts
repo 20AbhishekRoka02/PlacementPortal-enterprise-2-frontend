@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   try {
     const accessToken = req.cookies.get("access")?.value;
+    const cookie = req.headers.get("cookie") ?? "";
 
     if (!accessToken) {
       return NextResponse.json(
@@ -16,6 +17,7 @@ export async function GET(req: NextRequest) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
+        Cookie: cookie,
       },
       cache: "no-store",
     });

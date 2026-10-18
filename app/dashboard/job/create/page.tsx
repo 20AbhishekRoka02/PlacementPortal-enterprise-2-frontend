@@ -178,7 +178,7 @@ export default function CreateJobPage() {
       location: job.location.trim(),
       salary: job.salary,
       deadline: new Date(job.deadline).toISOString(),
-      batch: job.batch[0].id,
+      batches: job.batch.map((batch) => batch.id),
       description: job.description,
       attributes,
     };

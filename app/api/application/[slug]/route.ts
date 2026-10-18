@@ -87,6 +87,8 @@ export async function PUT(
     }
 
     const body = await req.json();
+    const cookie = req.headers.get("cookie") ?? "";
+    const csrfToken = req.cookies.get("csrftoken")?.value;
     const res = await fetch(
       `${process.env.BACKEND_URL}/job/applications/${slug}/`,
       {
@@ -94,16 +96,31 @@ export async function PUT(
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
+          Cookie: cookie,
+          ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
         },
         body: JSON.stringify(body),
       }
     );
 
-    const data = await res.json();
+    const responseText = await res.text();
 
-    return NextResponse.json(data, {
-      status: res.status,
-    });
+    if (!responseText) {
+      return new NextResponse(null, { status: res.status });
+    }
+
+    try {
+      return NextResponse.json(JSON.parse(responseText), {
+        status: res.status,
+      });
+    } catch {
+      return new NextResponse(responseText, {
+        status: res.status,
+        headers: {
+          "Content-Type": res.headers.get("content-type") ?? "text/plain",
+        },
+      });
+    }
   } catch (error) {
     console.error("Error updating application:", error);
 

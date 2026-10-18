@@ -14,6 +14,7 @@ export async function GET(
 
   try {
     const accessToken = req.cookies.get("access")?.value;
+    const cookie = req.headers.get("cookie") ?? "";
 
     if (!accessToken) {
       return NextResponse.json(
@@ -28,6 +29,7 @@ export async function GET(
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
+          Cookie: cookie,
         },
         cache: "no-store",
       }
