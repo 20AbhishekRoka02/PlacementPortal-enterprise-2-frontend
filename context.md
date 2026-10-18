@@ -11,9 +11,10 @@ This is a Next.js App Router frontend for a placement portal with staff and stud
 ## Application Structure
 
 - `app/` contains App Router pages and server-side API Route Handlers. `components/` contains shared forms, dashboard components, and UI primitives; `lib/utils.ts` provides shared utilities.
-- The dashboard routes include jobs, job creation/details, applications/details, and profile: `app/dashboard/`.
+- The dashboard routes include jobs, job creation/details, applications/details, and profile: `app/dashboard/`. Students use `/dashboard/application/[slug]`; staff application details are nested at `/dashboard/job/[slug]/application/[applicationSlug]`.
 - Staff and student UI behavior is informed by the profile's `is_staff` flag. [app/dashboard/DashboardSidebarProvider.tsx](app/dashboard/DashboardSidebarProvider.tsx) fetches `/api/profile` once and provides `profile` and `profileLoading` through `useDashboard()`. Dashboard descendants should use that context rather than independently fetching the shared profile.
 - [components/dashboard/app-sidebar.tsx](components/dashboard/app-sidebar.tsx) shows staff a Jobs link and students Jobs and Applications links. The Jobs page exposes job creation to staff. These are UI distinctions, not authorization controls.
+- Staff application rows on [app/dashboard/job/[slug]/page.tsx](app/dashboard/job/%5Bslug%5D/page.tsx) open the nested job/application route. Both staff and student routes render [components/dashboard/application/ApplicationDetailView.tsx](components/dashboard/application/ApplicationDetailView.tsx), which fetches the existing application detail API; staff presentation uses applicant-focused resume/contact labels. [components/dashboard/breadcrumbs.tsx](components/dashboard/breadcrumbs.tsx) shows the nested staff route as Jobs > Job ID > Application ID, with the job breadcrumb linking back to the job detail/application list.
 - [proxy.ts](proxy.ts) checks for `access` and `refresh` cookies before allowing `/dashboard` paths, sends unauthenticated users to `/auth/login`, redirects authenticated users away from `/auth/login`, and redirects `/` and `/dashboard` to `/dashboard/job`. It does not validate roles or replace backend authorization.
 
 ## Data And Auth Flow

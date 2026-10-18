@@ -18,12 +18,25 @@ function Breadcrumbs() {
 
   const paths = pathname.split("/").filter(Boolean);
 
-  const breadcrumbs = paths.slice(0, -1).map((name, index) => ({
-    name,
-    link: "/" + paths.slice(0, index + 1).join("/"),
-  }));
+  const isJobApplicationDetail =
+    paths.length === 5 &&
+    paths[0] === "dashboard" &&
+    paths[1] === "job" &&
+    paths[3] === "application";
 
-  const currentPage = paths[paths.length - 1];
+  const breadcrumbs = isJobApplicationDetail
+    ? [
+        { name: "Jobs", link: "/dashboard/job" },
+        { name: `Job ${paths[2]}`, link: `/dashboard/job/${paths[2]}` },
+      ]
+    : paths.slice(0, -1).map((name, index) => ({
+        name,
+        link: "/" + paths.slice(0, index + 1).join("/"),
+      }));
+
+  const currentPage = isJobApplicationDetail
+    ? `Application ${paths[4]}`
+    : paths[paths.length - 1];
 
   return (
     <Breadcrumb>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import ApplyJobDialog from "@/components/dashboard/application/ApplyJobDialogBox";
@@ -91,6 +91,7 @@ interface Job {
 
 export default function JobDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const router = useRouter();
   const [profile, setProfile] =
     useState<Profile | null>(null);
   const [ProfileLoading, setProfileLoading] = useState(true);
@@ -305,7 +306,15 @@ export default function JobDetailPage() {
           {applicationsLoading ? (
             <p className="text-muted-foreground">Loading applications...</p>
           ) : applications.length ? (
-            <DataTable columns={applicationColumns} data={applications} />
+            <DataTable
+              columns={applicationColumns}
+              data={applications}
+              onRowClick={(application) =>
+                router.push(
+                  `/dashboard/job/${slug}/application/${application.id}`
+                )
+              }
+            />
           ) : (
             <p className="text-muted-foreground">No applications found.</p>
           )}
