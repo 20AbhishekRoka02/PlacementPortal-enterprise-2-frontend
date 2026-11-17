@@ -551,7 +551,7 @@ export default function ApplyJobDialog({
             </DialogTrigger>
 
 
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="max-h-[calc(100svh-2rem)] overflow-hidden sm:max-w-2xl">
 
                 <DialogHeader>
 
@@ -567,7 +567,7 @@ export default function ApplyJobDialog({
                 </DialogHeader>
 
 
-                <ScrollArea className="max-h-[70vh] pr-4">
+                <ScrollArea className="max-h-[calc(100svh-12rem)] pr-3 sm:pr-4">
 
                     <div className="space-y-6">
 
@@ -725,7 +725,7 @@ export default function ApplyJobDialog({
                                                             className="p-4"
                                                         >
 
-                                                            <div className="flex items-center gap-4">
+                                                            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
 
                                                                 <RadioGroupItem
                                                                     value={String(
@@ -750,10 +750,10 @@ export default function ApplyJobDialog({
 
                                                                 <Label
                                                                     htmlFor={`resume-${resume.id}`}
-                                                                    className="flex-1 cursor-pointer"
+                                                                    className="min-w-0 flex-1 cursor-pointer"
                                                                 >
 
-                                                                    <p className="font-semibold">
+                                                                    <p className="truncate font-semibold">
                                                                         {
                                                                             resume.file_name
                                                                         }
@@ -790,9 +790,10 @@ export default function ApplyJobDialog({
 
                         {/* Actions */}
 
-                        <div className="flex justify-end gap-3">
+                        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
 
                             <Button
+                                className="w-full sm:w-auto"
                                 variant="outline"
                                 onClick={() =>
                                     setOpen(false)
@@ -803,6 +804,7 @@ export default function ApplyJobDialog({
 
 
                             <Button
+                                className="w-full sm:w-auto"
                                 onClick={applyJob}
                                 disabled={
                                     applying ||

@@ -101,7 +101,7 @@ export default function BatchForm({
             <Button
               type="button"
               variant="outline"
-              className="w-100 min-h-10 justify-start h-auto"
+              className="min-h-10 h-auto w-full justify-start"
             >
               <div className="flex max-h-24 flex-wrap gap-2 overflow-y-auto">
                 {selectedBatches.length === 0 && (
@@ -135,7 +135,7 @@ export default function BatchForm({
           </PopoverTrigger>
 
           <PopoverContent
-            className="w-100 p-2"
+            className="w-[calc(100vw-2rem)] max-w-[25rem] p-2"
             align="start"
           >
             <div className="space-y-1">

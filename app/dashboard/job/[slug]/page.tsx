@@ -814,7 +814,7 @@ export default function JobDetailPage() {
 
   if (jobLoading) {
     return (
-      <div className="container mx-auto py-10 text-center">
+      <div className="mx-auto px-4 py-10 text-center sm:px-6">
         Loading...
       </div>
     );
@@ -822,9 +822,9 @@ export default function JobDetailPage() {
 
   if (notFound) {
     return (
-      <div className="container mx-auto flex h-[60vh] items-center justify-center">
+      <div className="mx-auto flex h-[60vh] items-center justify-center px-4 sm:px-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Job Not Found</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Job Not Found</h1>
           <p className="mt-2 text-muted-foreground">
             The job you&apos;re looking for doesn&apos;t exist or may have been removed.
           </p>
@@ -834,9 +834,9 @@ export default function JobDetailPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl py-8 space-y-8">
+    <div className="mx-auto max-w-5xl space-y-8 px-4 py-6 sm:px-6 sm:py-8">
       <div>
-        <h1 className="text-3xl font-bold">{job!.title}</h1>
+        <h1 className="break-words text-2xl font-bold sm:text-3xl">{job!.title}</h1>
 
         <p className="mt-2 text-muted-foreground">
           {job!.company.name}
@@ -936,7 +936,7 @@ export default function JobDetailPage() {
             </label>
             <Input
               id="new-application-status"
-              className="max-w-xs"
+              className="w-full sm:max-w-xs"
               placeholder="New application status"
               value={newApplicationStatus}
               onChange={(event) => setNewApplicationStatus(event.target.value)}
@@ -951,6 +951,7 @@ export default function JobDetailPage() {
             <Button
               type="button"
               variant="outline"
+              className="w-full sm:w-auto"
               onClick={() => void handleCreateApplicationStatus()}
               disabled={isCreatingApplicationStatus || !newApplicationStatus.trim()}
             >

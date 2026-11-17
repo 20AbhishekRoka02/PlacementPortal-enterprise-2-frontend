@@ -1,13 +1,8 @@
 "use client"
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-
-import {
-  Avatar,
-  AvatarFallback
-} from '@radix-ui/react-avatar';
 
 import {
   Sidebar,
@@ -38,6 +33,7 @@ export default function AppSidebar({
   profileLoading
 }: AppSidebarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [active, setActive] = useState<string | null>(null);
 
   const sidebarMenuItems: MenuItem[] = profileLoading
@@ -64,14 +60,6 @@ export default function AppSidebar({
             },
           ]
         : [];
-
-  interface User {
-    name: string,
-    avatar: string,
-    email: string,
-    role: string,
-    is_staff: boolean,
-  }
 
   const handleClick = (key: string, url: string) => {
     setActive(key);
@@ -115,7 +103,7 @@ export default function AppSidebar({
               <p>Loading...</p>
             ) : (
               <>
-                <p>{profile?.email}</p>
+                <p className="break-all px-2 text-sm">{profile?.email}</p>
 
                 <p className="text-sm text-muted-foreground">
                   {profile?.role}
@@ -132,7 +120,7 @@ export default function AppSidebar({
               {sidebarMenuItems.map((menu: MenuItem) => (
                 <SidebarMenuItem key={menu.key} >
                   <SidebarMenuButton
-                    isActive={active === menu.key}
+                    isActive={active === menu.key || pathname.startsWith(menu.url)}
                     onClick={() => handleClick(menu.key, menu.url)}
                     variant={"outline"}
                     className='justify-center mb-3'

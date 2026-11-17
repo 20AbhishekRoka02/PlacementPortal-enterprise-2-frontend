@@ -217,7 +217,7 @@ export function JobAttributes({
                 </SelectContent>
               </Select>
             </div>
-            <div className="mt-3 flex justify-end gap-2">
+            <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 variant="outline"
@@ -299,7 +299,7 @@ export function JobAttributes({
                       <Input value={attribute.data_type} readOnly />
                     </div>
 
-                    <div className="flex items-end">
+                    <div className="flex items-end md:justify-end">
                       <Button
                         type="button"
                         variant="ghost"
@@ -312,7 +312,7 @@ export function JobAttributes({
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-4 md:grid-cols-4">
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <div className="flex items-center gap-2">
                       <Checkbox
                         checked={attribute.required}

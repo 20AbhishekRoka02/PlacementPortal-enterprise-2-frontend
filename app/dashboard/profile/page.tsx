@@ -127,11 +127,11 @@ export default function ProfilePage() {
     useEffect(() => { if (profile) { setDashboardProfile(profile); } }, [profile]);
 
     if (profileLoading) {
-        return <div>Loading profile...</div>;
+        return <div className="p-4 sm:p-6">Loading profile...</div>;
     }
 
     if (!dashboardProfile) {
-        return <div>Unable to load profile.</div>;
+        return <div className="p-4 sm:p-6">Unable to load profile.</div>;
     }
 
 
@@ -250,7 +250,7 @@ export default function ProfilePage() {
     // }
 
     return (
-        <Card className="max-w-3xl mx-auto my-10">
+        <Card className="mx-4 my-6 max-w-3xl sm:mx-6 sm:my-10 lg:mx-auto">
             <CardHeader>
                 <CardTitle>
                     My Profile

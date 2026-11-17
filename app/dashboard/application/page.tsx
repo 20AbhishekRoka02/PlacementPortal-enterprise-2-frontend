@@ -166,10 +166,12 @@ export default function JobsPage() {
   });
 
   return (
-    <DataTable
-      columns={columns}
-      data={jobs}
-      onRowClick={(row) => router.push(`/dashboard/application/${row.id}`)}
-    />
+    <main className="p-4 sm:p-6">
+      <DataTable
+        columns={columns}
+        data={jobs}
+        onRowClick={(row) => router.push(`/dashboard/application/${row.id}`)}
+      />
+    </main>
   );
 }

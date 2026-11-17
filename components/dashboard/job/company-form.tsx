@@ -245,13 +245,13 @@ export default function CompanyForm({
         <div className="space-y-4">
 
             {/* Company selector + Add button */}
-            <div className="flex gap-2">
+            <div className="flex min-w-0 gap-2">
 
                 <Select
                     value={selectedCompany}
                     onValueChange={handleCompanySelect}
                 >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="min-w-0 flex-1">
                         <SelectValue placeholder="Select a company" />
                     </SelectTrigger>
 

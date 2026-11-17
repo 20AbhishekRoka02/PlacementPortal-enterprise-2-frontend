@@ -123,7 +123,7 @@ export default function ApplicationDetailView({
 
   if (loading) {
     return (
-      <div className="container mx-auto py-10 text-center">
+      <div className="mx-auto px-4 py-10 text-center sm:px-6">
         Loading...
       </div>
     );
@@ -131,9 +131,9 @@ export default function ApplicationDetailView({
 
   if (notFound || !application) {
     return (
-      <div className="container mx-auto flex h-[60vh] items-center justify-center">
+      <div className="mx-auto flex h-[60vh] items-center justify-center px-4 sm:px-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Application Not Found</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Application Not Found</h1>
           <p className="mt-2 text-muted-foreground">
             This application doesn&apos;t exist.
           </p>
@@ -145,9 +145,9 @@ export default function ApplicationDetailView({
   const isStaffView = presentation === "staff";
 
   return (
-    <div className="container mx-auto max-w-5xl py-8 space-y-8">
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-8">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold">{application.job_title}</h1>
+        <h1 className="break-words text-2xl font-bold sm:text-3xl">{application.job_title}</h1>
 
         <p className="text-muted-foreground text-lg">{application.company}</p>
 
@@ -209,12 +209,12 @@ export default function ApplicationDetailView({
 
         <CardContent>
           {application.resume_file_name ? (
-            <div className="flex items-center gap-4 rounded-lg border p-4 hover:bg-muted/40 transition-colors">
+            <div className="flex min-w-0 items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/40 sm:gap-4 sm:p-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-md bg-red-100 text-red-600 font-bold text-sm">
                 PDF
               </div>
 
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">
                   {application.resume_file_name}
                 </p>

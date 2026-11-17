@@ -217,11 +217,11 @@ export default function CreateJobPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-5xl px-6 py-8">
+    <div className="min-h-full bg-white">
+      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-2xl font-bold sm:text-3xl">
             Enter Job Details
           </h1>
 
@@ -236,7 +236,7 @@ export default function CreateJobPage() {
               <CardTitle>Job Information</CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-5 p-5">
+            <CardContent className="space-y-5 p-4 sm:p-5">
 
               {/* Company */}
               <div className="space-y-2">
@@ -389,7 +389,7 @@ export default function CreateJobPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-md bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
+              className="w-full rounded-md bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 sm:w-auto"
             >
               {submitting ? "Creating..." : "Create Job"}
             </button>

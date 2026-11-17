@@ -72,8 +72,8 @@ function DashboardSidebarProvider({ children }: { children: React.ReactNode }) {
         <DashboardContext.Provider value={{ profile, profileLoading, }}>
             <SidebarProvider>
                 <AppSidebar profile={profile} profileLoading={profileLoading} />
-                <SidebarInset>
-                    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+                <SidebarInset className="min-w-0">
+                    <header className="flex h-14 shrink-0 items-center gap-2 border-b px-3 sm:h-16 sm:px-4">
                         <SidebarTrigger className="-ml-1" />
                         <Separator
                             orientation="vertical"
@@ -81,7 +81,7 @@ function DashboardSidebarProvider({ children }: { children: React.ReactNode }) {
                         />
                         <Breadcrumbs />
                     </header>
-                    {children}
+                    <div className="min-w-0 flex-1">{children}</div>
                 </SidebarInset>
             </SidebarProvider>
         </DashboardContext.Provider>

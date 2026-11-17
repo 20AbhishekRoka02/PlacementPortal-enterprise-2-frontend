@@ -115,21 +115,23 @@ export default function JobsPage() {
   const { profile } = useDashboard();
  
   return (
-    <div>
+    <div className="space-y-4 p-4 sm:p-6">
     {profile?.is_staff && (
 
       <Button
-      className="my-3 ml-4 py-5 px-4"
+      className="w-full sm:w-auto"
       onClick={()=> router.push('/dashboard/job/create')}
       ><PlusIcon/>Add Jobs</Button>
     )}
    
       
-      <DataTable
-        columns={columns}
-        data={jobs}
-        onRowClick={(row) => router.push(`/dashboard/job/${row.id}`)}
-      />
+      <section aria-label="Jobs">
+        <DataTable
+          columns={columns}
+          data={jobs}
+          onRowClick={(row) => router.push(`/dashboard/job/${row.id}`)}
+        />
+      </section>
     </div>
   );
 }
